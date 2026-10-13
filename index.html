@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Finance Brunch — Financial Advisory, Wealth & Planning</title>
+    <meta name="description" content="Empowering your financial journey with expert guidance, mutual funds, retirement planning, insurance, and tax advisory." />
+    <meta name="author" content="Finance Brunch" />
+    <link rel="icon" type="image/x-icon" href="/Finance-Brunch/favicon.ico" />
+    <meta property="og:image" content="/og-image.png" />
+
+    <!-- Single Page App rewrite handler for GitHub Pages -->
+    <script type="text/javascript">
+      (function(l) {
+        if (l.search[1] === '/' ) {
+          var decoded = l.search.slice(1).split('&').map(function(s) { 
+            return s.replace(/~and~/g, '&');
+          }).join('?');
+          window.history.replaceState(null, null,
+              l.pathname.slice(0, -1) + decoded + l.hash
+          );
+        }
+      }(window.location));
+    </script>
+    <!-- Asset URL resolver for GitHub Pages subpath hosting -->
+    <script type="text/javascript">
+      (function() {
+        var base = '/Finance-Brunch/';
+        if (window.location.pathname.startsWith(base)) {
+          var descriptor = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
+          if (descriptor && descriptor.set) {
+            var originalSet = descriptor.set;
+            Object.defineProperty(HTMLImageElement.prototype, 'src', {
+              set: function(val) {
+                if (typeof val === 'string') {
+                  if (val.startsWith('/images/') || val.startsWith('/lovable-uploads/')) {
+                    val = base + val.slice(1);
+                  }
+                }
+                return originalSet.call(this, val);
+              },
+              get: descriptor.get
+            });
+          }
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="/Finance-Brunch/assets/index-CwReShXH.js"></script>
+    <link rel="stylesheet" crossorigin href="/Finance-Brunch/assets/index-C3Xb3f5_.css">
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+  </body>
+</html>

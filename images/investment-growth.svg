@@ -1,0 +1,65 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <!-- Background -->
+  <rect width="800" height="600" fill="#f5f7fa" opacity="0.5" rx="20" ry="20"/>
+  
+  <!-- Line chart -->
+  <g transform="translate(100, 400)">
+    <!-- Grid lines -->
+    <line x1="0" y1="0" x2="600" y2="0" stroke="#ddd" stroke-width="2"/>
+    <line x1="0" y1="-250" x2="0" y2="0" stroke="#ddd" stroke-width="2"/>
+    
+    <!-- Chart lines -->
+    <path d="M0,0 L100,-50 L200,-80 L300,-150 L400,-220 L500,-250 L600,-350" stroke="#3b82f6" stroke-width="4" fill="none"/>
+    <path d="M0,0 L100,-30 L200,-40 L300,-100 L400,-180 L500,-200 L600,-280" stroke="#10b981" stroke-width="4" fill="none"/>
+    
+    <!-- Data points -->
+    <circle cx="0" cy="0" r="6" fill="#3b82f6"/>
+    <circle cx="100" cy="-50" r="6" fill="#3b82f6"/>
+    <circle cx="200" cy="-80" r="6" fill="#3b82f6"/>
+    <circle cx="300" cy="-150" r="6" fill="#3b82f6"/>
+    <circle cx="400" cy="-220" r="6" fill="#3b82f6"/>
+    <circle cx="500" cy="-250" r="6" fill="#3b82f6"/>
+    <circle cx="600" cy="-350" r="6" fill="#3b82f6"/>
+    
+    <circle cx="0" cy="0" r="6" fill="#10b981"/>
+    <circle cx="100" cy="-30" r="6" fill="#10b981"/>
+    <circle cx="200" cy="-40" r="6" fill="#10b981"/>
+    <circle cx="300" cy="-100" r="6" fill="#10b981"/>
+    <circle cx="400" cy="-180" r="6" fill="#10b981"/>
+    <circle cx="500" cy="-200" r="6" fill="#10b981"/>
+    <circle cx="600" cy="-280" r="6" fill="#10b981"/>
+    
+    <!-- Chart labels -->
+    <text x="-10" y="20" font-family="Arial" font-size="12" text-anchor="end" fill="#888">0</text>
+    <text x="-10" y="-50" font-family="Arial" font-size="12" text-anchor="end" fill="#888">50</text>
+    <text x="-10" y="-100" font-family="Arial" font-size="12" text-anchor="end" fill="#888">100</text>
+    <text x="-10" y="-150" font-family="Arial" font-size="12" text-anchor="end" fill="#888">150</text>
+    <text x="-10" y="-200" font-family="Arial" font-size="12" text-anchor="end" fill="#888">200</text>
+    <text x="-10" y="-250" font-family="Arial" font-size="12" text-anchor="end" fill="#888">250</text>
+    
+    <text x="0" y="40" font-family="Arial" font-size="12" text-anchor="middle" fill="#888">Year 1</text>
+    <text x="100" y="40" font-family="Arial" font-size="12" text-anchor="middle" fill="#888">Year 2</text>
+    <text x="200" y="40" font-family="Arial" font-size="12" text-anchor="middle" fill="#888">Year 3</text>
+    <text x="300" y="40" font-family="Arial" font-size="12" text-anchor="middle" fill="#888">Year 4</text>
+    <text x="400" y="40" font-family="Arial" font-size="12" text-anchor="middle" fill="#888">Year 5</text>
+    <text x="500" y="40" font-family="Arial" font-size="12" text-anchor="middle" fill="#888">Year 6</text>
+    <text x="600" y="40" font-family="Arial" font-size="12" text-anchor="middle" fill="#888">Year 7</text>
+  </g>
+  
+  <!-- Abstract financial elements -->
+  <g transform="translate(700, 150)">
+    <circle cx="0" cy="0" r="40" fill="#3b82f6" opacity="0.2"/>
+    <path d="M-20,-20 L20,20 M-20,20 L20,-20" stroke="#3b82f6" stroke-width="4"/>
+  </g>
+  
+  <g transform="translate(150, 100)">
+    <rect x="-30" y="-30" width="60" height="60" rx="10" ry="10" fill="#10b981" opacity="0.2"/>
+    <path d="M-15,0 L-5,10 L15,-10" stroke="#10b981" stroke-width="4" fill="none"/>
+  </g>
+  
+  <g transform="translate(650, 300)">
+    <polygon points="0,-30 25,15 -25,15" fill="#f59e0b" opacity="0.2"/>
+    <path d="M0,-15 L0,15 M-10,0 L10,0" stroke="#f59e0b" stroke-width="4"/>
+  </g>
+</svg>
