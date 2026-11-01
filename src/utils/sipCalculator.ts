@@ -6,9 +6,12 @@
  *   FV = P * [((1 + i)^n - 1) / i] * (1 + i)
  * Where:
  *   P = Monthly SIP installment
- *   i = Effective monthly rate: (1 + expectedAnnualReturn / 100)^(1 / 12) - 1
+ *   i = Nominal monthly rate: r / 12  (r = annual rate / 100)
+ *       e.g. 12% p.a. → i = 0.12 / 12 = 0.01
  *   n = Total number of monthly contributions (durationYears * 12)
  *   FV = Estimated future value
+ *
+ * Convention matches Groww's published SIP calculator (r/12 nominal rate).
  *
  * For zero return (expectedAnnualReturn = 0):
  *   FV = P * n = totalInvested
@@ -17,7 +20,7 @@
  * For Step-Up SIP:
  *   Calculates the changing monthly contribution schedule where the monthly SIP
  *   amount increases annually by the selected step-up percentage after every 12 months,
- *   using the same effective monthly return rate and beginning-of-month convention.
+ *   using the same nominal monthly return rate and beginning-of-month convention.
  *   Calculations strictly operate locally without external APIs.
  */
 
@@ -184,11 +187,12 @@ export function calculateSIP(inputs: SIPCalculatorInputs): SIPCalculationResult 
     };
   }
 
-  // Effective monthly return rate conversion matching Groww's convention:
-  // i = (1 + expectedAnnualReturn / 100)^(1 / 12) - 1
+  // Nominal monthly return rate matching Groww's convention:
+  // i = annualRate / 12 / 100
+  // e.g. 12% p.a. → i = 0.12 / 12 = 0.01 per month
   const monthlyRate = expectedAnnualReturn === 0
     ? 0
-    : Math.pow(1 + expectedAnnualReturn / 100, 1 / 12) - 1;
+    : expectedAnnualReturn / 100 / 12;
 
   let totalInvested = 0;
   let currentBalance = 0;

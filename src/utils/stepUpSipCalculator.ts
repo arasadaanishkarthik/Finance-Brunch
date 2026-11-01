@@ -3,8 +3,9 @@
  *
  * Implements deterministic client-side Step-Up SIP calculations:
  * - The monthly contribution increases after every 12 monthly installments by annualStepUpPercentage.
- * - Effective monthly rate: i = (1 + expectedAnnualReturn / 100)^(1 / 12) - 1
- * - End-of-month contribution timing: balance = balance * (1 + i) + monthlyContribution
+ * - Nominal monthly rate: i = r / 12  (r = annual rate / 100)
+ *   Matching Groww's Step-Up SIP calculator convention.
+ * - Beginning-of-month contribution timing: balance = (balance + contribution) * (1 + i)
  * - Includes fixed SIP comparison with identical starting contribution and return assumptions.
  */
 
@@ -127,9 +128,10 @@ export function calculateStepUpSIP(inputs: StepUpSIPCalculatorInputs): StepUpSIP
   }
 
   const totalMonths = Math.round(investmentDurationYears * 12);
+  // Nominal monthly rate matching Groww's convention: r / 12
   const monthlyRate = expectedAnnualReturn === 0
     ? 0
-    : Math.pow(1 + expectedAnnualReturn / 100, 1 / 12) - 1;
+    : expectedAnnualReturn / 100 / 12;
 
   let stepUpBalance = 0;
   let stepUpTotalInvested = 0;
@@ -145,12 +147,12 @@ export function calculateStepUpSIP(inputs: StepUpSIPCalculatorInputs): StepUpSIP
     stepUpTotalInvested += monthlyContribution;
     currentYearInvested += monthlyContribution;
 
-    // End-of-month contribution accumulation:
-    // closingBalance = previousBalance * (1 + monthlyRate) + contribution
+    // Beginning-of-month contribution accumulation matching Groww:
+    // balance = (balance + contribution) * (1 + monthlyRate)
     if (monthlyRate === 0) {
       stepUpBalance += monthlyContribution;
     } else {
-      stepUpBalance = (stepUpBalance * (1 + monthlyRate)) + monthlyContribution;
+      stepUpBalance = (stepUpBalance + monthlyContribution) * (1 + monthlyRate);
     }
 
     if (m % 12 === 0 || m === totalMonths) {
@@ -179,13 +181,13 @@ export function calculateStepUpSIP(inputs: StepUpSIPCalculatorInputs): StepUpSIP
     initialMonthlyInvestment * Math.pow(1 + annualStepUpPercentage / 100, finalYearIndex)
   );
 
-  // Fixed SIP calculation for identical starting parameters and end-of-month timing:
+  // Fixed SIP calculation for identical starting parameters (beginning-of-month, Groww convention):
   const fixedTotalInvested = initialMonthlyInvestment * totalMonths;
   let fixedFutureValue = 0;
   if (monthlyRate === 0) {
     fixedFutureValue = fixedTotalInvested;
   } else {
-    fixedFutureValue = initialMonthlyInvestment * (Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate;
+    fixedFutureValue = initialMonthlyInvestment * ((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate) * (1 + monthlyRate);
   }
   const fixedReturns = Math.max(0, fixedFutureValue - fixedTotalInvested);
 

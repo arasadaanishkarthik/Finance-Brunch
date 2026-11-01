@@ -1,26 +1,39 @@
-
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { MapPin, ZoomIn, ZoomOut } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Globe, Plus, Minus, RotateCcw, MapPin, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 
 export interface OfficeLocation {
   city: string;
   country: string;
-  lat: number;
-  lng: number;
+  description: string;
+  px: number;
+  py: number;
+  isHQ?: boolean;
   isMain?: boolean;
+  labelPos?: 'top' | 'bottom' | 'left' | 'right';
+  lat?: number;
+  lng?: number;
 }
 
 export const officeLocations: OfficeLocation[] = [
-  { city: "Mumbai", country: "India", lat: 19.076, lng: 72.877, isMain: true },
-  { city: "New Delhi", country: "India", lat: 28.613, lng: 77.209 },
-  { city: "New York", country: "USA", lat: 40.713, lng: -74.006 },
-  { city: "London", country: "UK", lat: 51.507, lng: -0.127 },
-  { city: "Dubai", country: "UAE", lat: 25.276, lng: 55.296 },
-  { city: "Singapore", country: "Singapore", lat: 1.352, lng: 103.820 }
+  { city: "Vizag", country: "India", description: "Global Headquarters", px: 69.5, py: 48, isHQ: true, isMain: true, labelPos: "right" },
+  { city: "Hyderabad", country: "India", description: "Technology Hub", px: 67.8, py: 49.5, labelPos: "bottom" },
+  { city: "Mumbai", country: "India", description: "Financial Center", px: 65.5, py: 47, labelPos: "left" },
+  { city: "Dubai", country: "UAE", description: "Middle East Office", px: 59.5, py: 42, labelPos: "top" },
+  { city: "New York", country: "USA", description: "Americas Office", px: 22.5, py: 33, labelPos: "top" },
+  { city: "Toronto", country: "Canada", description: "Canadian Office", px: 21, py: 27, labelPos: "left" },
+  { city: "London", country: "UK", description: "European Headquarters", px: 46.5, py: 26, labelPos: "top" },
+  { city: "Madrid", country: "Spain", description: "Southern Europe Office", px: 45, py: 33, labelPos: "bottom" }
 ];
+
+function getArcD(x1: number, y1: number, x2: number, y2: number): string {
+  const midX = (x1 + x2) / 2;
+  const dist = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+  const midY = Math.min(y1, y2) - dist * 0.3;
+  return `M${x1},${y1} Q${midX},${midY} ${x2},${y2}`;
+}
 
 interface MapComponentProps {
   selectedCity?: string | null;
@@ -29,225 +42,488 @@ interface MapComponentProps {
 }
 
 export default function MapComponent({ selectedCity, onSelectCity, className }: MapComponentProps = {}) {
-  const [isVisible, setIsVisible] = useState(false);
-  const { ref, inView } = useInView({
-    threshold: 0.1,
-    triggerOnce: true,
-  });
-  
-  const [activeLocation, setActiveLocation] = useState<OfficeLocation | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true });
+
+  const [hoveredOffice, setHoveredOffice] = useState<OfficeLocation | null>(null);
+  const [showPaths, setShowPaths] = useState(false);
+  const [showPins, setShowPins] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  const svgRef = useRef<SVGSVGElement>(null);
-  const isDragging = useRef(false);
-  const lastPosition = useRef({ x: 0, y: 0 });
+  const [isDraggingState, setIsDraggingState] = useState(false);
+
+  const dragStartRef = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const minZoom = 1;
+  const maxZoom = 4;
+  const zoomStep = 0.5;
 
   useEffect(() => {
     if (inView) {
-      setIsVisible(true);
+      setIsLoaded(true);
+      const timerPins = setTimeout(() => setShowPins(true), 400);
+      const timerPaths = setTimeout(() => setShowPaths(true), 900);
+      return () => {
+        clearTimeout(timerPins);
+        clearTimeout(timerPaths);
+      };
     }
   }, [inView]);
 
+  const clampPan = useCallback((x: number, y: number, currentZoom: number) => {
+    const container = containerRef.current;
+    if (!container) return { x, y };
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+    const maxPanX = (width * (currentZoom - 1)) / 2;
+    const maxPanY = (height * (currentZoom - 1)) / 2;
+    return {
+      x: Math.max(-maxPanX, Math.min(maxPanX, x)),
+      y: Math.max(-maxPanY, Math.min(maxPanY, y)),
+    };
+  }, []);
+
   const handleZoomIn = () => {
-    setZoomLevel(prev => Math.min(prev + 0.5, 4));
+    const next = Math.min(zoomLevel + zoomStep, maxZoom);
+    setZoomLevel(next);
+    setPanOffset((prev) => clampPan(prev.x, prev.y, next));
   };
 
   const handleZoomOut = () => {
-    setZoomLevel(prev => Math.max(prev - 0.5, 0.5));
+    const next = Math.max(zoomLevel - zoomStep, minZoom);
+    setZoomLevel(next);
+    setPanOffset((prev) => clampPan(prev.x, prev.y, next));
   };
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (mapContainerRef.current) {
-      isDragging.current = true;
-      lastPosition.current = { x: e.clientX, y: e.clientY };
+  const handleReset = () => {
+    setZoomLevel(1);
+    setPanOffset({ x: 0, y: 0 });
+  };
+
+  const handleWheel = useCallback(
+    (e: React.WheelEvent) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.3 : 0.3;
+      const next = Math.max(minZoom, Math.min(maxZoom, zoomLevel + delta));
+      setZoomLevel(next);
+      setPanOffset((prev) => clampPan(prev.x, prev.y, next));
+    },
+    [zoomLevel, clampPan]
+  );
+
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (zoomLevel <= 1) return;
+      setIsDraggingState(true);
+      dragStartRef.current = {
+        x: e.clientX,
+        y: e.clientY,
+        panX: panOffset.x,
+        panY: panOffset.y,
+      };
+    },
+    [zoomLevel, panOffset]
+  );
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isDraggingState) return;
+      const dx = e.clientX - dragStartRef.current.x;
+      const dy = e.clientY - dragStartRef.current.y;
+      setPanOffset(clampPan(dragStartRef.current.panX + dx, dragStartRef.current.panY + dy, zoomLevel));
+    },
+    [isDraggingState, zoomLevel, clampPan]
+  );
+
+  const handleMouseUp = useCallback(() => setIsDraggingState(false), []);
+
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      if (zoomLevel <= 1 || e.touches.length !== 1) return;
+      setIsDraggingState(true);
+      dragStartRef.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+        panX: panOffset.x,
+        panY: panOffset.y,
+      };
+    },
+    [zoomLevel, panOffset]
+  );
+
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (!isDraggingState || e.touches.length !== 1) return;
+      const dx = e.touches[0].clientX - dragStartRef.current.x;
+      const dy = e.touches[0].clientY - dragStartRef.current.y;
+      setPanOffset(clampPan(dragStartRef.current.panX + dx, dragStartRef.current.panY + dy, zoomLevel));
+    },
+    [isDraggingState, zoomLevel, clampPan]
+  );
+
+  const hqOffice = officeLocations.find((loc) => loc.isHQ) || officeLocations[0];
+
+  const getLabelStyle = useCallback((loc: OfficeLocation) => {
+    const base: React.CSSProperties = { position: 'absolute' };
+    switch (loc.labelPos) {
+      case 'right':
+        return { ...base, left: `calc(${loc.px}% + 18px)`, top: `${loc.py}%`, transform: 'translateY(-50%)' };
+      case 'left':
+        return { ...base, right: `calc(${100 - loc.px}% + 18px)`, top: `${loc.py}%`, transform: 'translateY(-50%)' };
+      case 'bottom':
+        return { ...base, left: `${loc.px}%`, top: `calc(${loc.py}% + 20px)`, transform: 'translateX(-50%)' };
+      case 'top':
+      default:
+        return { ...base, left: `${loc.px}%`, bottom: `calc(${100 - loc.py}% + 20px)`, transform: 'translateX(-50%)' };
     }
-  };
+  }, []);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (isDragging.current) {
-      const dx = e.clientX - lastPosition.current.x;
-      const dy = e.clientY - lastPosition.current.y;
-      
-      setPanOffset(prev => ({
-        x: prev.x + dx,
-        y: prev.y + dy
-      }));
-      
-      lastPosition.current = { x: e.clientX, y: e.clientY };
-    }
-  };
-
-  const handleMouseUp = () => {
-    isDragging.current = false;
-  };
-
-  const handleMouseLeave = () => {
-    isDragging.current = false;
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 1 && mapContainerRef.current) {
-      isDragging.current = true;
-      lastPosition.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    }
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (isDragging.current && e.touches.length === 1) {
-      const dx = e.touches[0].clientX - lastPosition.current.x;
-      const dy = e.touches[0].clientY - lastPosition.current.y;
-      
-      setPanOffset(prev => ({
-        x: prev.x + dx,
-        y: prev.y + dy
-      }));
-      
-      lastPosition.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    }
-  };
-
-  const handleTouchEnd = () => {
-    isDragging.current = false;
-  };
-
-  const currentActiveLocation = selectedCity 
-    ? officeLocations.find(l => l.city === selectedCity) || activeLocation 
-    : activeLocation;
+  const activeLoc = selectedCity
+    ? officeLocations.find((l) => l.city.toLowerCase() === selectedCity.toLowerCase()) || hoveredOffice
+    : hoveredOffice;
 
   return (
-    <div 
-      className={cn("rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm", className)}
+    <div
+      ref={ref}
+      className={cn(
+        "rounded-2xl overflow-hidden border border-border shadow-2xl transition-all duration-1000 bg-card",
+        isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8",
+        className
+      )}
     >
-      <div 
-        ref={mapContainerRef}
-        className="relative h-[290px] sm:h-[330px] md:h-[360px] w-full bg-slate-50 dark:bg-slate-950 cursor-move overflow-hidden touch-none"
+      {/* Top Header Bar */}
+      <div className="flex items-center gap-2 px-4 py-2.5 bg-card dark:bg-slate-900 border-b border-border dark:border-slate-800">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+            <Globe className="h-3.5 w-3.5 text-primary" />
+          </div>
+          <span className="text-sm font-semibold text-foreground">Finance Brunch</span>
+          <span className="text-xs text-muted-foreground">·</span>
+          <span className="text-xs text-muted-foreground">Global Offices</span>
+        </div>
+        <div className="ml-auto flex items-center gap-3">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Sparkles className="h-3 w-3 text-primary/70" />
+            <span>{officeLocations.length} locations</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Map Viewport */}
+      <div
+        ref={containerRef}
+        className={cn(
+          "relative w-full overflow-hidden select-none bg-slate-50 dark:bg-slate-950",
+          zoomLevel > 1 ? (isDraggingState ? "cursor-grabbing" : "cursor-grab") : "cursor-default"
+        )}
+        style={{ aspectRatio: "1400/800" }}
+        onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
+        onMouseLeave={handleMouseUp}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        onTouchEnd={() => setIsDraggingState(false)}
       >
-        {/* World Map SVG with zoom and pan */}
-        <div 
-          style={{ 
-            transform: `scale(${zoomLevel}) translate(${panOffset.x / zoomLevel}px, ${panOffset.y / zoomLevel}px)`,
-            transformOrigin: 'center',
-            transition: isDragging.current ? 'none' : 'transform 0.1s ease'
+        {/* Transformable Canvas */}
+        <div
+          className="absolute inset-0 w-full h-full transition-transform duration-300 ease-out"
+          style={{
+            transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
+            transformOrigin: "center center",
           }}
-          className="absolute inset-0 w-full h-full"
         >
-          <svg 
-            viewBox="0 0 1024 600" 
-            className="absolute inset-0 w-full h-full"
-            ref={svgRef}
+          {/* Base World Map Image */}
+          <img
+            src="/images/world-map.png"
+            alt="Finance Brunch World Map"
+            className={cn(
+              "absolute inset-0 w-full h-full object-cover transition-opacity duration-1000",
+              isLoaded ? "opacity-100 dark:opacity-35 dark:invert dark:hue-rotate-180" : "opacity-0"
+            )}
+            draggable={false}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/20 pointer-events-none" />
+
+          {/* SVG Connecting Arcs */}
+          <svg
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            style={{ overflow: "visible" }}
           >
-            <path
-              d="M769,552L768,550L770,546L768,544L769,542L767,541L766,537L764,536L764,533L767,530L770,532L771,530L774,533L774,535L778,538L778,540L776,541L778,543L778,547L774,548L769,552ZM168,549L166,548L165,545L162,546L161,544L160,545L161,549L160,551L161,552L162,551L164,553L166,551L168,549ZM167,544L166,542L165,544L166,546L167,544ZM170,531L169,532L167,530L166,531L168,533L169,534L169,532L171,533L170,531ZM175,526L174,525L174,527L175,526ZM180,521L178,520L178,522L180,521ZM679,518L677,520L680,519L679,518ZM174,515L172,513L170,515L172,517L174,515ZM676,515L672,517L674,518L676,515ZM159,515L158,516L159,517L157,519L159,521L160,520L159,518L161,516L159,515ZM150,515L149,513L147,515L148,518L150,515ZM153,512L150,512L152,514L153,512ZM668,508L664,509L669,510L668,508ZM658,506L656,505L656,508L654,512L657,509L658,509L659,507L658,506ZM648,506L646,504L646,507L644,510L646,511L648,510L649,508L648,506ZM180,507L178,505L175,507L175,509L179,511L180,507ZM647,503L647,506L649,507L649,504L651,505L652,503L650,502L647,503ZM640,504L640,506L642,504L640,504ZM630,504L627,502L626,504L628,505L628,507L629,505L630,504ZM184,501L182,501L178,503L182,504L184,501ZM614,499L612,501L612,504L614,499ZM642,498L643,500L645,500L642,498ZM639,498L638,500L639,498ZM604,493L603,494L604,495L603,498L605,497L608,498L607,493L605,492L604,493ZM636,496L636,493L634,495L635,497L636,496ZM619,492L617,491L616,493L619,492ZM630,490L631,492L633,491L630,490ZM626,488L625,490L627,490L626,488ZM638,488L639,491L642,487L640,486L638,488ZM645,487L644,485L641,487L644,488L645,487ZM657,479L655,478L653,480L656,480L658,483L660,483L661,480L663,478L660,477L657,479ZM225,479L223,479L222,483L224,483L225,481L226,482L228,480L225,479ZM606,477L606,484L600,486L599,484L597,486L590,485L588,487L596,487L597,489L599,490L599,488L602,488L603,490L605,489L607,487L608,490L611,490L611,486L614,486L614,483L617,483L618,480L616,480L612,481L611,483L609,483L607,479L606,477ZM576,481L578,484L582,485L583,483L581,482L581,480L578,479L576,481ZM630,479L629,478L627,481L629,482L630,479ZM562,477L560,480L562,481L562,479L564,477L562,477ZM554,476L552,477L554,480L554,476ZM621,476L621,478L624,477L626,480L629,476L626,475L624,476L621,476ZM212,474L211,476L209,477L210,479L211,479L212,474ZM549,477L547,474L546,475L545,478L547,478L549,477ZM543,473L541,473L539,476L538,473L535,473L532,476L530,478L533,478L538,476L539,478L540,477L543,474L543,473ZM623,474L623,476L625,476L623,474ZM201,474L199,473L198,475L200,475L201,474ZM616,470L612,473L617,475L619,473L616,470ZM187,473L187,471L184,469L182,471L180,474L179,477L181,479L182,477L185,474L187,473ZM610,472L608,472L607,474L609,476L611,474L610,472ZM598,471L599,473L602,472L604,474L605,472L602,470L598,471ZM633,471L630,471L632,473L633,471ZM589,469L587,470L587,472L589,471L590,473L592,473L592,471L589,469ZM638,468L636,467L636,469L638,469L638,468ZM595,467L594,468L595,470L596,469L595,467ZM623,463L622,465L624,464L623,463ZM571,461L569,464L571,461ZM183,460L182,463L184,460L183,460ZM613,459L611,458L607,459L607,462L610,462L612,460L613,459ZM632,459L634,458L632,456L628,455L631,458L630,460L632,459ZM175,455L172,455L171,457L173,459L173,463L171,465L171,467L174,466L176,464L179,459L177,457L175,455ZM640,456L642,458L643,456L640,456ZM586,453L589,453L591,451L586,453ZM636,451L637,452L638,451L635,449L636,451ZM654,449L652,448L650,452L652,453L654,449ZM580,448L579,446L577,451L580,448ZM203,448L202,450L205,449L203,448ZM651,446L650,447L652,448L651,446ZM644,443L642,443L644,445L644,443ZM188,440L187,443L189,442L190,444L192,444L194,442L193,439L189,439L188,440ZM654,437L653,440L654,441L656,438L657,439L659,435L657,434L654,437ZM207,437L208,435L206,434L204,436L207,437ZM663,435L661,434L661,436L663,435ZM667,434L668,436L667,434ZM641,433L640,434L641,436L642,435L641,433ZM212,433L211,431L208,432L210,435L212,433ZM672,430L670,430L670,434L674,434L675,432L672,430ZM656,427L654,426L653,429L655,429L656,427ZM215,427L214,425L213,427L214,428L215,427ZM224,421L223,419L221,421L223,422L224,421ZM661,420L663,418L664,420L664,416L659,415L658,413L655,411L656,409L654,407L652,407L650,409L648,407L647,409L646,407L642,404L640,404L638,407L636,409L638,412L641,411L645,412L647,413L648,416L651,416L651,418L653,417L653,419L655,420L655,422L657,423L659,421L661,420ZM250,419L248,417L247,420L249,421L250,419ZM618,414L621,413L622,411L619,410L618,413L615,413L614,415L617,416L618,414ZM228,413L227,410L224,409L222,405L221,406L223,410L224,414L228,413ZM610,414L609,411L606,410L605,408L602,408L604,411L603,414L608,414L610,414ZM625,412L626,410L625,409L623,406L622,408L623,411L625,412ZM668,410L669,406L667,402L664,401L664,399L666,397L664,395L661,395L661,393L658,391L654,394L654,396L652,396L647,398L650,401L652,400L653,402L657,401L659,403L659,405L657,409L659,407L659,410L662,409L665,411L668,410ZM683,409L687,406L685,403L682,404L681,406L679,405L676,406L676,408L683,409ZM595,410L596,408L594,408L592,403L591,405L594,409L595,410ZM691,405L689,405L689,407L691,407L691,405ZM596,404L597,402L595,401L593,403L596,404ZM566,404L565,402L564,405L566,404ZM698,402L696,400L695,402L698,402ZM677,398L675,402L673,401L675,399L673,398L673,396L670,392L667,396L667,394L665,392L664,394L665,395L668,395L669,397L669,399L671,400L674,401L673,403L672,402L672,404L675,406L678,405L681,402L680,399L677,398ZM242,400L241,402L242,400ZM692,398L690,398L693,402L695,399L693,397L692,398ZM236,396L231,396L231,400L234,399L234,401L237,400L238,398L236,396ZM703,396L704,397L703,396ZM574,393L572,395L574,396L575,394L574,393ZM712,391L714,389L712,390L712,391ZM703,389L704,391L706,390L703,389ZM261,378L262,386L263,386L263,384L266,382L265,379L263,379L261,378ZM700,383L698,384L699,386L702,384L700,383ZM689,378L687,375L683,376L684,379L686,380L689,378ZM254,378L254,380L255,378L254,378ZM677,375L676,377L676,379L680,380L682,378L680,374L677,375ZM666,375L667,373L666,371L663,366L659,364L659,362L655,364L653,362L650,366L653,368L651,371L652,373L653,371L655,374L658,376L666,375ZM247,370L249,364L247,370ZM638,366L640,364L640,362L637,362L637,360L633,358L634,356L630,353L626,355L626,358L628,360L629,364L634,365L635,367L638,366ZM718,364L715,364L716,365L718,364ZM584,363L580,363L582,366L584,363ZM591,359L592,361L595,362L594,358L592,359L591,359ZM704,359L702,359L703,361L704,359ZM698,359L697,357L695,359L696,362L698,359ZM601,357L602,355L602,352L598,354L600,358L601,357ZM296,356L295,353L292,354L294,358L296,356ZM709,353L707,350L705,352L709,353ZM303,351L302,349L301,352L303,351ZM624,348L624,346L621,347L620,344L618,345L617,348L618,349L620,348L622,350L624,348ZM611,342L612,344L615,342L615,339L613,341L611,342ZM317,342L317,340L315,339L315,342L317,342ZM694,340L693,336L690,334L688,334L686,332L684,332L683,335L688,335L686,337L686,340L690,341L693,343L694,340ZM322,334L321,329L319,330L319,334L322,334ZM599,332L594,328L592,329L593,333L595,333L599,332ZM723,328L722,330L724,330L723,328ZM605,328L604,325L602,327L605,328ZM610,323L611,321L610,319L608,319L608,324L610,323ZM332,322L331,319L328,318L325,320L325,322L330,323L332,322ZM662,323L663,321L661,319L662,323ZM645,321L646,318L649,318L651,316L647,316L647,314L645,313L643,315L645,316L642,319L645,321ZM676,319L675,316L670,317L671,321L676,319ZM724,321L725,318L722,319L724,321ZM616,315L615,313L612,312L612,314L616,315ZM627,314L626,311L624,314L627,314ZM654,311L656,313L658,311L658,308L656,307L653,308L652,311L654,311ZM729,310L731,308L730,306L726,306L726,309L729,310ZM670,307L669,305L667,307L669,309L670,307ZM340,304L338,304L337,306L340,304ZM632,304L631,301L628,301L628,303L627,303L626,300L623,302L624,304L629,306L632,304ZM737,303L738,301L736,301L734,300L732,302L735,304L737,303ZM740,298L739,296L736,296L736,298L740,298ZM683,297L683,291L679,292L681,296L683,297ZM672,294L671,291L669,293L665,293L666,295L670,297L670,295L672,294ZM633,291L634,289L632,287L629,286L629,288L630,292L632,293L633,291ZM609,292L610,290L608,290L608,287L606,290L607,292L609,292ZM744,291L742,290L742,288L740,286L736,287L735,289L736,291L738,292L737,295L741,294L744,291ZM346,291L344,289L345,287L343,285L341,288L341,291L346,291ZM714,290L713,286L710,286L707,288L710,289L711,291L714,290ZM659,286L660,288L664,287L666,284L660,281L659,284L659,286ZM624,285L624,282L622,281L620,283L621,286L624,285ZM651,278L649,276L650,274L647,273L646,276L644,277L646,280L649,282L651,280L652,277L651,278ZM665,281L666,278L664,276L659,276L657,278L661,280L665,281ZM728,278L727,276L729,275L726,273L723,276L725,278L728,278ZM355,275L351,277L352,280L355,275ZM613,277L614,275L610,274L609,276L611,278L613,277ZM702,275L701,274L698,276L700,277L702,275ZM718,273L720,270L717,270L716,272L718,273ZM654,269L656,269L658,265L659,261L655,261L654,264L654,269ZM673,267L675,265L675,263L673,265L673,267ZM369,266L368,262L362,262L362,260L358,260L357,262L359,264L361,265L363,263L366,264L369,266ZM682,263L679,264L679,262L677,262L678,264L677,267L679,266L680,268L681,265L682,263ZM700,261L699,259L695,260L696,263L700,261ZM662,259L663,256L661,255L659,258L659,261L662,259ZM715,256L714,254L710,255L712,258L715,256ZM693,258L691,255L689,255L691,258L693,258ZM706,253L711,253L708,250L705,250L703,252L706,253ZM672,250L674,249L671,245L669,245L669,248L670,249L668,250L668,252L672,250ZM380,242L378,242L377,244L379,247L382,246L380,242ZM660,243L661,240L659,240L655,242L656,244L658,245L660,243ZM693,242L693,240L690,240L686,243L687,245L691,245L693,242ZM697,239L698,241L700,240L698,238L697,239ZM665,236L665,233L663,232L663,235L665,236ZM703,236L705,234L702,233L699,234L699,236L703,236ZM391,233L390,231L388,232L388,234L391,233ZM683,232L683,230L680,230L678,232L680,234L683,232ZM674,234L675,231L672,231L671,233L674,234ZM666,227L667,225L666,223L664,225L666,227ZM685,227L685,224L682,224L682,227L685,227ZM395,227L394,223L390,224L391,226L395,227ZM671,225L671,222L668,219L666,217L663,218L664,220L664,222L666,222L668,224L670,226L671,225ZM693,219L692,217L688,218L688,220L693,219ZM401,217L399,217L397,219L398,221L401,217ZM687,215L684,214L684,217L687,215ZM666,213L668,210L665,208L661,209L659,211L661,213L663,213L666,213ZM673,208L673,211L675,209L675,207L673,208ZM679,208L677,207L675,209L676,211L679,209L679,208ZM683,207L683,204L680,204L678,203L678,206L682,209L683,207ZM406,201L404,202L405,204L407,202L406,201ZM658,202L657,201L654,202L655,205L658,202ZM412,196L410,194L407,195L409,197L412,196ZM668,191L671,191L668,187L663,183L659,183L660,187L664,187L664,189L668,191ZM666,181L667,179L666,177L663,177L663,179L666,181ZM676,178L676,176L672,176L674,178L675,181L677,181L676,178ZM670,170L668,170L667,174L669,175L670,170ZM679,171L679,168L677,169L675,166L672,165L669,162L667,163L668,165L671,165L672,168L674,168L676,172L679,171ZM429,164L428,167L425,170L427,170L430,169L432,166L429,164ZM673,158L673,160L675,160L675,158L673,158ZM661,158L661,156L659,155L656,156L657,159L661,158ZM668,157L669,155L666,155L668,157ZM671,150L670,149L669,152L671,150ZM677,150L677,148L675,148L675,150L677,150ZM666,143L664,142L661,145L658,145L659,151L660,149L664,149L665,147L667,147L666,143ZM678,143L675,138L670,143L670,145L668,145L669,148L673,146L674,148L678,143ZM673,137L674,135L672,134L670,136L673,137ZM676,132L676,129L673,129L672,131L676,132ZM671,126L671,123L668,123L668,126L671,126ZM684,122L684,119L680,117L675,119L675,122L680,122L684,122ZM667,122L667,119L665,120L665,122L667,122ZM694,120L694,114L691,110L688,107L684,107L687,110L687,113L684,116L685,120L687,119L689,117L690,119L694,120ZM662,117L662,114L657,110L658,114L655,116L655,118L657,118L662,117ZM647,118L649,116L647,114L644,116L647,118ZM675,112L675,110L673,110L673,112L675,112ZM678,110L680,110L678,106L677,108L675,108L675,111L678,110ZM666,111L665,106L659,107L660,112L662,111L666,111ZM684,102L683,99L679,97L677,98L675,101L681,103L684,102ZM672,95L670,94L669,97L672,97L672,95ZM680,92L678,90L676,90L675,92L678,92L680,92ZM690,88L690,86L687,85L687,88L690,88ZM681,82L679,81L674,81L677,83L679,83L681,82ZM686,81L686,79L684,79L684,81L686,81ZM464,79L465,77L462,77L462,79L464,79ZM689,76L688,70L686,75L682,76L685,78L689,76ZM670,75L671,73L670,71L667,72L670,75ZM669,68L667,68L665,66L665,68L663,68L665,71L669,68ZM659,60L657,60L657,58L654,58L652,61L654,63L651,64L654,67L655,64L659,60ZM672,58L673,55L671,53L668,53L668,51L664,50L661,52L661,57L663,57L667,54L669,56L672,58ZM676,52L677,49L675,48L672,50L673,53L676,52ZM661,47L657,46L657,43L655,41L649,41L649,44L652,45L651,47L653,48L657,47L661,47ZM482,46L480,44L475,43L477,47L481,48L482,46ZM646,45L644,45L644,43L641,44L638,42L637,43L640,46L642,47L644,47L646,45ZM680,44L681,42L679,42L678,45L680,44ZM636,42L636,39L633,39L629,43L632,47L636,42ZM651,41L652,38L649,36L648,38L651,41ZM487,37L485,37L485,39L487,39L487,37ZM647,36L648,33L645,33L643,36L647,36ZM668,35L668,32L666,32L664,34L664,36L666,37L668,35ZM655,33L657,31L655,29L652,29L652,32L655,33ZM642,29L642,26L640,26L638,29L640,31L642,29ZM670,29L669,26L666,26L666,29L670,29ZM661,28L660,25L657,24L658,27L661,28ZM630,27L630,21L627,20L627,23L623,23L623,20L621,21L621,25L624,27L630,27ZM663,22L660,19L658,20L660,23L663,22ZM640,13L645,12L645,10L634,9L634,6L631,6L629,9L632,11L634,10L637,13L640,13ZM625,10L623,8L622,10L625,10ZM651,8L655,5L653,3L649,3L646,5L646,9L651,8ZM585,7L583,6L583,8L585,7ZM635,5L635,2L633,2L630,4L635,5ZM599,4L599,2L596,2L596,5L599,4ZM610,3L611,1L608,1L608,3L610,3Z"
-              className="fill-blue-200 dark:fill-blue-800 stroke-blue-400 dark:stroke-blue-600 stroke-[0.5]"
-            />
-            
-            {/* Circles for countries */}
-            {officeLocations.map((location, index) => {
-              const x = (location.lng + 180) * (1024 / 360);
-              const y = (90 - location.lat) * (600 / 180);
-              
-              return (
-                <circle 
-                  key={`circle-${index}`}
-                  cx={x}
-                  cy={y}
-                  r={12}
-                  className="fill-blue-500 opacity-50"
-                />
-              );
-            })}
+            <defs>
+              <filter id="fbPathShadow">
+                <feGaussianBlur stdDeviation="0.3" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+              <linearGradient id="fbFlightGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.6" />
+                <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="0.95" />
+                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.6" />
+              </linearGradient>
+            </defs>
+
+            {officeLocations
+              .filter((loc) => !loc.isHQ)
+              .map((loc, idx) => {
+                const arcD = getArcD(hqOffice.px, hqOffice.py, loc.px, loc.py);
+                return (
+                  <g key={`flight-${loc.city}`}>
+                    {/* Subtle Background Guide Track */}
+                    <path
+                      d={arcD}
+                      fill="none"
+                      stroke="hsl(var(--primary))"
+                      strokeOpacity={0.12}
+                      strokeWidth={0.4}
+                      className={cn("transition-opacity duration-1000", showPaths ? "opacity-100" : "opacity-0")}
+                    />
+
+                    {/* Animated Pulsing Dashed Arc */}
+                    <path
+                      d={arcD}
+                      fill="none"
+                      stroke="url(#fbFlightGradient)"
+                      strokeWidth={0.25}
+                      strokeDasharray="1 0.8"
+                      filter="url(#fbPathShadow)"
+                      className={cn("transition-opacity duration-700", showPaths ? "opacity-100" : "opacity-0")}
+                      style={{ transitionDelay: `${idx * 150}ms` }}
+                    >
+                      <animate
+                        attributeName="stroke-dashoffset"
+                        from="20"
+                        to="0"
+                        dur={`${3 + idx * 0.4}s`}
+                        repeatCount="indefinite"
+                      />
+                    </path>
+
+                    {/* Moving Glowing Particle along Arc */}
+                    {showPaths && (
+                      <circle r="0.38" fill="hsl(var(--primary))" filter="url(#fbPathShadow)">
+                        <animateMotion
+                          dur={`${4 + idx * 0.6}s`}
+                          repeatCount="indefinite"
+                          path={arcD}
+                        />
+                      </circle>
+                    )}
+                  </g>
+                );
+              })}
           </svg>
-          
-          {/* Location Pins */}
-          {officeLocations.map((location, index) => {
-            const x = (location.lng + 180) * (1024 / 360);
-            const y = (90 - location.lat) * (600 / 180);
-            const isMatch = currentActiveLocation?.city === location.city;
-            
+
+          {/* Location Pins & Labels */}
+          {officeLocations.map((loc, idx) => {
+            const isHQ = Boolean(loc.isHQ);
+            const isSelected = selectedCity
+              ? selectedCity.toLowerCase() === loc.city.toLowerCase()
+              : hoveredOffice?.city === loc.city;
+
             return (
-              <div 
-                key={index}
-                className={cn(
-                  "absolute transform -translate-x-1/2 -translate-y-1/2 z-10 transition-all duration-300 ease-in-out cursor-pointer",
-                  isMatch ? "scale-125 z-20" : "hover:scale-110"
-                )}
-                style={{ 
-                  left: `${(x / 1024) * 100}%`, 
-                  top: `${(y / 600) * 100}%`,
-                  transitionDelay: `${index * 80}ms`
-                }}
-                onMouseEnter={() => {
-                  setActiveLocation(location);
-                  onSelectCity?.(location.city);
-                }}
-                onMouseLeave={() => {
-                  setActiveLocation(null);
-                  onSelectCity?.(null);
-                }}
-                onClick={() => {
-                  onSelectCity?.(location.city);
-                }}
-              >
-                <div className="relative">
-                  <MapPin 
+              <div key={loc.city}>
+                {/* Pin Icon */}
+                <motion.div
+                  className="absolute z-10 cursor-pointer"
+                  style={{
+                    left: `${loc.px}%`,
+                    top: `${loc.py}%`,
+                    transform: "translate(-50%, -100%)",
+                  }}
+                  initial={{ opacity: 0, y: -30, scale: 0 }}
+                  animate={showPins ? { opacity: 1, y: 0, scale: 1 } : {}}
+                  transition={{
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 15,
+                    delay: idx * 0.08,
+                  }}
+                  onMouseEnter={() => {
+                    setHoveredOffice(loc);
+                    onSelectCity?.(loc.city);
+                  }}
+                  onMouseLeave={() => {
+                    setHoveredOffice(null);
+                    onSelectCity?.(null);
+                  }}
+                  onClick={() => {
+                    onSelectCity?.(selectedCity === loc.city ? null : loc.city);
+                  }}
+                >
+                  <div
                     className={cn(
-                      "h-7 w-7 text-blue-600 dark:text-blue-400 transition-transform",
-                      isMatch && "animate-bounce text-blue-700 dark:text-blue-300"
-                    )} 
-                  />
-                  <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2.5 h-2.5 bg-blue-500 rounded-full">
-                    <div className="absolute inset-0 bg-blue-500 rounded-full animate-ping opacity-75"></div>
-                  </div>
-                  <div 
-                    className={cn(
-                      "absolute -bottom-10 left-1/2 transform -translate-x-1/2 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xs text-gray-900 dark:text-white text-xs font-semibold py-1 px-2.5 rounded-md shadow-md whitespace-nowrap opacity-0 translate-y-1 transition-all duration-200 pointer-events-none",
-                      isMatch && "opacity-100 translate-y-0"
+                      "relative transition-transform duration-200",
+                      isSelected && "scale-125 -translate-y-1"
                     )}
                   >
-                    {location.city}, {location.country}
+                    <svg
+                      width={isHQ ? 36 : 28}
+                      height={isHQ ? 46 : 36}
+                      viewBox="0 0 28 36"
+                      fill="none"
+                      className="drop-shadow-lg"
+                    >
+                      <path
+                        d="M14 0C6.27 0 0 6.27 0 14c0 10.5 14 22 14 22s14-11.5 14-22C28 6.27 21.73 0 14 0z"
+                        fill={isHQ || isSelected ? "hsl(var(--primary))" : "#3b82f6"}
+                        className="transition-colors duration-200"
+                      />
+                      <circle cx="14" cy="13" r="5.5" fill="white" />
+                      {isHQ && (
+                        <text
+                          x="14"
+                          y="16"
+                          textAnchor="middle"
+                          fontSize="8"
+                          fontWeight="bold"
+                          fill="hsl(var(--primary))"
+                        >
+                          ★
+                        </text>
+                      )}
+                    </svg>
+                    {/* Radar Pulse Circle */}
+                    <div
+                      className={cn(
+                        "absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full",
+                        isHQ ? "w-4 h-4" : "w-3 h-3"
+                      )}
+                    >
+                      <div className="absolute inset-0 bg-primary/30 rounded-full animate-ping" />
+                      <div className="absolute inset-0 bg-primary/20 rounded-full" />
+                    </div>
                   </div>
-                </div>
+                </motion.div>
+
+                {/* City Label Badge */}
+                <motion.div
+                  className="absolute z-20 pointer-events-none"
+                  style={getLabelStyle(loc)}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={showPins ? { opacity: 1, scale: 1 } : {}}
+                  transition={{ delay: 0.5 + idx * 0.08, duration: 0.3 }}
+                >
+                  <div
+                    className={cn(
+                      "px-2.5 py-1 rounded-md text-[11px] font-bold whitespace-nowrap shadow-md backdrop-blur-xs transition-all duration-200 border select-none",
+                      isSelected
+                        ? "bg-primary text-primary-foreground border-primary shadow-xl scale-110"
+                        : isHQ
+                        ? "bg-primary text-primary-foreground border-primary shadow-lg"
+                        : "bg-card/95 dark:bg-slate-900/95 text-foreground border-border dark:border-slate-800 shadow-xs"
+                    )}
+                  >
+                    <div className="flex items-center gap-1">
+                      {isHQ && <span className="text-[9px]">📍</span>}
+                      <span>{loc.city}</span>
+                      {isHQ && (
+                        <span className="text-[9px] font-normal opacity-90 ml-0.5">
+                          HQ
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
               </div>
             );
           })}
         </div>
-        
-        {/* Zoom Controls */}
-        <div className="absolute bottom-3 right-3 flex flex-col space-y-1.5 z-20">
-          <Button 
-            variant="secondary" 
-            size="icon" 
-            onClick={handleZoomIn} 
-            className="h-7 w-7 bg-white/95 dark:bg-slate-800/95 shadow-xs border border-slate-200/60 dark:border-slate-700/60 hover:bg-white dark:hover:bg-slate-800"
+
+        {/* Zoom Controls Buttons */}
+        <div className="absolute right-3 bottom-8 sm:bottom-10 z-30 flex flex-col gap-0.5">
+          <button
+            onClick={handleZoomIn}
+            disabled={zoomLevel >= maxZoom}
+            className={cn(
+              "w-9 h-9 sm:w-10 sm:h-10 bg-card/95 dark:bg-slate-900/95 border border-border dark:border-slate-800 rounded-t-lg flex items-center justify-center shadow-lg hover:bg-muted dark:hover:bg-slate-800 transition-colors",
+              zoomLevel >= maxZoom && "opacity-40 cursor-not-allowed"
+            )}
             aria-label="Zoom in"
           >
-            <ZoomIn className="h-3.5 w-3.5" />
-          </Button>
-          <Button 
-            variant="secondary" 
-            size="icon" 
-            onClick={handleZoomOut} 
-            className="h-7 w-7 bg-white/95 dark:bg-slate-800/95 shadow-xs border border-slate-200/60 dark:border-slate-700/60 hover:bg-white dark:hover:bg-slate-800"
+            <Plus className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+          </button>
+          <button
+            onClick={handleZoomOut}
+            disabled={zoomLevel <= minZoom}
+            className={cn(
+              "w-9 h-9 sm:w-10 sm:h-10 bg-card/95 dark:bg-slate-900/95 border border-border dark:border-slate-800 flex items-center justify-center shadow-lg hover:bg-muted dark:hover:bg-slate-800 transition-colors",
+              zoomLevel <= minZoom && "opacity-40 cursor-not-allowed"
+            )}
             aria-label="Zoom out"
           >
-            <ZoomOut className="h-3.5 w-3.5" />
-          </Button>
+            <Minus className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+          </button>
+          <button
+            onClick={handleReset}
+            disabled={zoomLevel === 1}
+            className={cn(
+              "w-9 h-9 sm:w-10 sm:h-10 bg-card/95 dark:bg-slate-900/95 border border-border dark:border-slate-800 rounded-b-lg flex items-center justify-center shadow-lg hover:bg-muted dark:hover:bg-slate-800 transition-colors",
+              zoomLevel === 1 && "opacity-40 cursor-not-allowed"
+            )}
+            aria-label="Reset view"
+          >
+            <RotateCcw className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-foreground" />
+          </button>
         </div>
-        
-        {/* Instructions overlay */}
-        <div className="absolute bottom-3 left-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs text-[11px] text-slate-500 dark:text-slate-400 px-2.5 py-1 rounded-md shadow-xs border border-slate-200/50 dark:border-slate-800/50 z-20">
-          Drag to pan • Use buttons to zoom
+
+        {/* Zoom Level Indicator */}
+        <AnimatePresence>
+          {zoomLevel > 1 && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              className="absolute left-3 bottom-8 sm:bottom-10 z-30 bg-card/90 dark:bg-slate-900/90 border border-border dark:border-slate-800 rounded-lg px-2.5 py-1 shadow-lg backdrop-blur-xs"
+            >
+              <span className="text-xs font-semibold text-foreground">
+                {Math.round(zoomLevel * 100)}%
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Floating Active Office Information Card */}
+        <AnimatePresence>
+          {activeLoc && (
+            <motion.div
+              initial={{ opacity: 0, y: 8, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, scale: 0.95 }}
+              transition={{ duration: 0.15 }}
+              className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 bg-card/95 dark:bg-slate-900/95 backdrop-blur-xs border border-border dark:border-slate-800 rounded-xl shadow-2xl z-30 overflow-hidden"
+              style={{ minWidth: 220 }}
+            >
+              <div className="h-1 bg-primary" />
+              <div className="px-3.5 py-2.5 sm:px-4 sm:py-3 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 border border-primary/20 text-primary">
+                  <MapPin className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="font-bold text-sm text-foreground leading-tight">
+                    {activeLoc.city}, {activeLoc.country}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {activeLoc.description}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Footer Attribution / Branding */}
+        <div className="absolute bottom-0 inset-x-0 h-6 bg-gradient-to-t from-card/80 to-transparent flex items-end justify-end px-3 pb-1 z-20 pointer-events-none">
+          <span className="text-[9px] text-muted-foreground/60 select-none">
+            Finance Brunch Global Network © 2025
+          </span>
         </div>
-        
-        <div className="absolute bottom-0 inset-x-0 h-6 bg-gradient-to-t from-slate-50/70 dark:from-slate-950/70 to-transparent pointer-events-none"></div>
       </div>
     </div>
   );

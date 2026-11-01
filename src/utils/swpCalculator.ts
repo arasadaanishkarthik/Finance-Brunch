@@ -5,7 +5,8 @@
  * Monthly and Yearly withdrawal schedules:
  * 
  * 1. Monthly Schedule:
- *    - Effective monthly rate: i = (1 + expectedAnnualReturn / 100)^(1 / 12) - 1.
+ *    - Nominal monthly rate: i = r / 12  (r = annual rate / 100)
+ *      Matching Groww's SWP calculator convention.
  *    - Each month: growth is compounded first, then scheduled monthly withdrawal is deducted.
  *    - Capped at available balance (never allows balance to become negative).
  * 
@@ -226,9 +227,10 @@ export function calculateSWP(inputs: SWPCalculatorInputs): SWPCalculationResult 
   // 2. MONTHLY WITHDRAWAL SCHEDULE SIMULATION
   // ==========================================
   const totalMonths = Math.round(withdrawalDurationYears * 12);
+  // Nominal monthly rate matching Groww's SWP convention: r / 12
   const monthlyRate = expectedAnnualReturn === 0
     ? 0
-    : Math.pow(1 + expectedAnnualReturn / 100, 1 / 12) - 1;
+    : expectedAnnualReturn / 100 / 12;
 
   let currentYearOpening = currentBalance;
   let currentYearGrowth = 0;

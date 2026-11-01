@@ -2,12 +2,13 @@
  * Finance Brunch - Lumpsum Calculator Utility
  *
  * Implements deterministic client-side lumpsum compounding calculations:
- * FV = P * (1 + i)^n
+ * FV = P * (1 + r)^t
  * Where:
  *   P = Initial lumpsum investment amount
- *   i = Effective monthly rate: (1 + expectedAnnualReturn / 100)^(1 / 12) - 1
- *   n = Total number of compounding months (durationYears * 12)
+ *   r = Annual return rate in decimal (e.g. 12% = 0.12)
+ *   t = Investment duration in years
  *
+ * Convention matches Groww's published Lumpsum calculator (annual compounding).
  * Handles zero return: FV = P, returns = 0.
  */
 
@@ -96,13 +97,13 @@ export function calculateLumpsum(inputs: LumpsumCalculatorInputs): LumpsumCalcul
   }
 
   const totalMonths = Math.round(investmentDurationYears * 12);
-  const monthlyRate = expectedAnnualReturn === 0
-    ? 0
-    : Math.pow(1 + expectedAnnualReturn / 100, 1 / 12) - 1;
+  // Annual compounding matching Groww's convention: FV = P * (1 + r)^t
+  // where r = annual rate, t = years
+  const annualRate = expectedAnnualReturn / 100;
 
-  const futureValue = monthlyRate === 0
+  const futureValue = expectedAnnualReturn === 0
     ? initialInvestment
-    : initialInvestment * Math.pow(1 + monthlyRate, totalMonths);
+    : initialInvestment * Math.pow(1 + annualRate, investmentDurationYears);
 
   if (!isFinite(futureValue) || isNaN(futureValue) || futureValue > Number.MAX_SAFE_INTEGER) {
     return {
@@ -123,10 +124,9 @@ export function calculateLumpsum(inputs: LumpsumCalculatorInputs): LumpsumCalcul
 
   const yearlyBreakdown: LumpsumYearlyBreakdownItem[] = [];
   for (let y = 1; y <= investmentDurationYears; y++) {
-    const monthsAtYear = y * 12;
-    const fvAtYear = monthlyRate === 0
+    const fvAtYear = expectedAnnualReturn === 0
       ? initialInvestment
-      : initialInvestment * Math.pow(1 + monthlyRate, monthsAtYear);
+      : initialInvestment * Math.pow(1 + annualRate, y);
 
     yearlyBreakdown.push({
       year: y,

@@ -19,7 +19,7 @@ function testSIPCalculator() {
       return { isValid: false, totalInvested: 0, futureValue: 0, estimatedReturns: 0 };
     }
     const totalMonths = Math.round(investmentDurationYears * 12);
-    const monthlyRate = expectedAnnualReturn === 0 ? 0 : Math.pow(1 + expectedAnnualReturn / 100, 1 / 12) - 1;
+    const monthlyRate = expectedAnnualReturn === 0 ? 0 : expectedAnnualReturn / 100 / 12;
     let balance = 0;
     let totalInvested = 0;
     for (let m = 1; m <= totalMonths; m++) {
@@ -115,7 +115,7 @@ function testStepUpSIPCalculator() {
     }
 
     const totalMonths = Math.round(investmentDurationYears * 12);
-    const monthlyRate = expectedAnnualReturn === 0 ? 0 : Math.pow(1 + expectedAnnualReturn / 100, 1 / 12) - 1;
+    const monthlyRate = expectedAnnualReturn === 0 ? 0 : expectedAnnualReturn / 100 / 12;
 
     let balance = 0;
     let totalInvested = 0;
@@ -130,9 +130,9 @@ function testStepUpSIPCalculator() {
       totalInvested += monthlyContribution;
       currentYearInvested += monthlyContribution;
 
-      // End-of-month contribution accumulation:
-      // closingBalance = previousBalance * (1 + monthlyRate) + contribution
-      balance = monthlyRate === 0 ? balance + monthlyContribution : (balance * (1 + monthlyRate)) + monthlyContribution;
+      // Beginning-of-month contribution accumulation:
+      // closingBalance = (previousBalance + contribution) * (1 + monthlyRate)
+      balance = monthlyRate === 0 ? balance + monthlyContribution : (balance + monthlyContribution) * (1 + monthlyRate);
 
       if (m % 12 === 0 || m === totalMonths) {
         const yearNumber = Math.ceil(m / 12);
@@ -154,7 +154,7 @@ function testStepUpSIPCalculator() {
     const finalMonthlySIP = initialMonthlyInvestment * Math.pow(1 + annualStepUpPercentage / 100, finalYearIndex);
 
     const fixedTotalInvested = initialMonthlyInvestment * totalMonths;
-    const fixedFV = monthlyRate === 0 ? fixedTotalInvested : initialMonthlyInvestment * (Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate;
+    const fixedFV = monthlyRate === 0 ? fixedTotalInvested : initialMonthlyInvestment * ((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate) * (1 + monthlyRate);
 
     const roundedFV = Math.round(balance);
     const roundedTotalInvested = Math.round(totalInvested);
@@ -199,15 +199,15 @@ function testStepUpSIPCalculator() {
 
   // Verify independently calculated expected values:
   assert.strictEqual(refCase.totalInvested, 191249, 'Total invested should be ₹1,91,249');
-  assert.strictEqual(refCase.futureValue, 323817, 'Future value should be ₹3,23,817');
-  assert.strictEqual(refCase.estimatedReturns, 132568, 'Estimated returns should be ₹1,32,568');
+  assert.strictEqual(refCase.futureValue, 337433, 'Future value should be ₹3,37,433');
+  assert.strictEqual(refCase.estimatedReturns, 146184, 'Estimated returns should be ₹1,46,184');
   assert.strictEqual(refCase.finalMonthlySIP, 2358, 'Final monthly SIP should be ₹2,358');
   assert.strictEqual(refCase.estimatedReturns, refCase.futureValue - refCase.totalInvested, 'Returns must equal FV - Invested');
 
   // Verify fixed SIP comparison:
   assert.strictEqual(refCase.fixedSipComparison.totalInvested, 120000, 'Fixed SIP invested should be ₹1,20,000');
-  assert.strictEqual(refCase.fixedSipComparison.futureValue, 221930, 'Fixed SIP FV should be ₹2,21,930');
-  assert.strictEqual(refCase.fixedSipComparison.differenceFV, 101887, 'Step-up advantage should be ₹1,01,887');
+  assert.strictEqual(refCase.fixedSipComparison.futureValue, 232339, 'Fixed SIP FV should be ₹2,32,339');
+  assert.strictEqual(refCase.fixedSipComparison.differenceFV, 105094, 'Step-up advantage should be ₹1,05,094');
 
   console.log(`✓ PASS: Reference Case (₹1,000/mo, 10% step-up, 12% p.a., 10y): Total Invested: ₹${refCase.totalInvested}, FV: ₹${refCase.futureValue}, Returns: ₹${refCase.estimatedReturns}, Advantage: +₹${refCase.fixedSipComparison.differenceFV}`);
 
@@ -242,7 +242,7 @@ function testStepUpSIPCalculator() {
     annualStepUpPercentage: 0,
   });
   assert.strictEqual(zeroStepUp.totalInvested, 120000);
-  assert.strictEqual(zeroStepUp.futureValue, 221930);
+  assert.strictEqual(zeroStepUp.futureValue, 232339);
   assert.strictEqual(zeroStepUp.fixedSipComparison.differenceFV, 0);
   console.log('✓ PASS: Step-Up SIP Zero step-up (matches Fixed SIP identically, Advantage == 0)');
 
@@ -254,8 +254,8 @@ function testStepUpSIPCalculator() {
     annualStepUpPercentage: 10,
   });
   assert.strictEqual(oneYear.totalInvested, 12000);
-  assert.strictEqual(oneYear.futureValue, 12646);
-  assert.strictEqual(oneYear.estimatedReturns, 646);
+  assert.strictEqual(oneYear.futureValue, 12809);
+  assert.strictEqual(oneYear.estimatedReturns, 809);
   console.log(`✓ PASS: Step-Up SIP 1-Year duration (Invested: ₹${oneYear.totalInvested}, FV: ₹${oneYear.futureValue}, Returns: ₹${oneYear.estimatedReturns})`);
 
   // 5. LONGER INVESTMENT DURATION TEST (20 Years):
@@ -288,9 +288,8 @@ function testLumpsumCalculator() {
 
   function calculateLumpsum(inputs) {
     const { initialInvestment, expectedAnnualReturn, investmentDurationYears } = inputs;
-    const totalMonths = Math.round(investmentDurationYears * 12);
-    const monthlyRate = expectedAnnualReturn === 0 ? 0 : Math.pow(1 + expectedAnnualReturn / 100, 1 / 12) - 1;
-    const futureValue = monthlyRate === 0 ? initialInvestment : initialInvestment * Math.pow(1 + monthlyRate, totalMonths);
+    const r = expectedAnnualReturn / 100;
+    const futureValue = expectedAnnualReturn === 0 ? initialInvestment : initialInvestment * Math.pow(1 + r, investmentDurationYears);
     return {
       totalInvested: initialInvestment,
       futureValue: Math.round(futureValue),
