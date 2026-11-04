@@ -11,6 +11,7 @@ import {
   calculateLumpsum,
   calculateSWP,
   calculateStepUpSIP,
+  calculateStepUpSWP,
   calculateMFReturns,
   calculateROI,
   calculateCAGR,
@@ -215,6 +216,50 @@ export function runCalculator(meta: CalculatorMeta, inputValues: Record<string, 
     };
   }
 
+  // Step-Up SWP
+  if (id === 'step-up-swp') {
+    const res = calculateStepUpSWP({
+      initialCorpus: inputValues.totalCorpus ?? 5000000,
+      initialMonthlyWithdrawal: inputValues.monthlyWithdrawal ?? 30000,
+      annualStepUpPercentage: inputValues.stepUpPercentage ?? 5,
+      expectedAnnualReturn: inputValues.expectedAnnualReturn ?? 9,
+      withdrawalDurationYears: inputValues.tenureYears ?? 10,
+    });
+    const metrics = [
+      { label: 'Initial Corpus', value: formatINR(res.initialCorpus) },
+      { label: 'Total Withdrawn', value: formatINR(res.totalActualWithdrawals), subtext: 'Cash received over tenure' },
+      { label: 'Remaining Corpus', value: formatINR(res.remainingCorpus), isHighlight: true, subtext: res.isExhausted ? `Depleted in Year ${res.exhaustionYear}` : 'Safe Balance' },
+    ];
+    const chartData = [
+      { name: 'Total Withdrawn', value: res.totalActualWithdrawals, color: '#f59e0b' },
+      { name: 'Remaining Balance', value: Math.max(0, res.remainingCorpus), color: '#3b82f6' },
+    ];
+    const scheduleRows: CalculatorExportRow[] = res.yearlySchedule.map((r) => ({
+      col1: `Year ${r.year}`,
+      col2: formatINR(r.openingBalance),
+      col3: formatINR(r.growthEarned),
+      col4: `${formatINR(r.annualWithdrawal)} (${formatINR(r.monthlyWithdrawal)}/mo)`,
+      col5: formatINR(r.closingBalance),
+    }));
+
+    return {
+      metrics,
+      chartData,
+      scheduleHeaders: ['Period', 'Opening Balance', 'Growth Earned', 'Annual Withdrawal (Step-Up)', 'Closing Balance'],
+      scheduleRows,
+      exportData: {
+        calculatorType: 'swp',
+        calculatorTitle: meta.name,
+        generatedDateStr: nowStr,
+        inputs: formatInputsList(),
+        summaryMetrics: metrics,
+        growthSchedule: scheduleRows,
+        scheduleHeaders: ['Period', 'Opening Balance', 'Growth Earned', 'Annual Withdrawal (Step-Up)', 'Closing Balance'],
+        disclaimer: meta.disclaimer,
+      },
+    };
+  }
+
   // 4. Mutual Fund Returns
   if (id === 'mf-returns') {
     const res = calculateMFReturns({
@@ -368,12 +413,24 @@ export function runCalculator(meta: CalculatorMeta, inputValues: Record<string, 
 
   // 8. XIRR
   if (id === 'xirr') {
-    const cf = [
-      { date: '2024-01-01', amount: -(inputValues.installment1 ?? 25000) },
-      { date: '2024-04-01', amount: -(inputValues.installment2 ?? 25000) },
-      { date: '2024-07-01', amount: -(inputValues.installment3 ?? 25000) },
-      { date: '2025-01-01', amount: inputValues.currentValuation ?? 88000 },
-    ];
+    const cf: Array<{ date: string; amount: number }> = [];
+    const inst1 = inputValues.installment1 ?? 25000;
+    if (inst1 > 0) {
+      cf.push({ date: '2024-01-01', amount: -inst1 });
+    }
+    const inst2 = inputValues.installment2 ?? 0;
+    if (inst2 > 0) {
+      cf.push({ date: '2024-04-01', amount: -inst2 });
+    }
+    const inst3 = inputValues.installment3 ?? 0;
+    if (inst3 > 0) {
+      cf.push({ date: '2024-07-01', amount: -inst3 });
+    }
+    const currentVal = inputValues.currentValuation ?? (inst2 > 0 || inst3 > 0 ? 88000 : 30000);
+    if (currentVal > 0) {
+      cf.push({ date: '2025-01-01', amount: currentVal });
+    }
+
     const res = calculateXIRR(cf);
     const metrics = [
       { label: 'XIRR (Annualized Return)', value: `${res.xirrPercent}%`, isHighlight: true },
@@ -385,17 +442,27 @@ export function runCalculator(meta: CalculatorMeta, inputValues: Record<string, 
       { name: 'Total Invested', value: res.totalInvested, color: '#3b82f6' },
       { name: 'Capital Gain', value: Math.max(0, res.totalGain), color: '#10b981' },
     ];
+    const scheduleRows: CalculatorExportRow[] = cf.map((c, idx) => ({
+      col1: idx === cf.length - 1 ? 'Maturity (Day 365)' : `Installment ${idx + 1} (${c.date})`,
+      col2: c.amount < 0 ? formatINR(Math.abs(c.amount)) : '-',
+      col3: c.amount > 0 ? formatINR(c.amount) : '-',
+      col4: c.date,
+      col5: c.amount > 0 ? `${res.xirrPercent}% XIRR` : 'Invested Outflow',
+    }));
+
     return {
       metrics,
       chartData,
+      scheduleHeaders: ['Period', 'Outflow', 'Inflow', 'Date', 'Status'],
+      scheduleRows,
       exportData: {
         calculatorType: 'sip',
         calculatorTitle: meta.name,
         generatedDateStr: nowStr,
         inputs: formatInputsList(),
         summaryMetrics: metrics,
-        growthSchedule: [],
-        scheduleHeaders: ['Period', 'Outflow', 'Inflow', 'XIRR %', 'Net Value'],
+        growthSchedule: scheduleRows,
+        scheduleHeaders: ['Period', 'Outflow', 'Inflow', 'Date', 'Status'],
         disclaimer: meta.disclaimer,
       },
     };

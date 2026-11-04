@@ -1,7 +1,7 @@
 /**
- * Finance Brunch — Complete 38-Calculator Directory Catalogue
+ * Finance Brunch — Complete Calculator Directory Catalogue
  * 
- * Central registry of all 38 calculators with structured metadata:
+ * Central registry of calculators with structured metadata:
  * - Identification & SEO routing
  * - Mathematical formulas & assumptions
  * - Worked examples with verified benchmarks
@@ -12,6 +12,7 @@ export type CalculatorCategory =
   | 'all'
   | 'investments'
   | 'government'
+  | 'loans-tax-salary'
   | 'loans'
   | 'tax'
   | 'trading';
@@ -26,6 +27,7 @@ export interface CalculatorFieldConfig {
   unit: '₹' | '%' | 'Years' | 'Months' | 'Days' | 'Qty' | 'Number';
   tooltip?: string;
   isCurrency?: boolean;
+  isOptional?: boolean;
 }
 
 export interface CalculatorMeta {
@@ -36,6 +38,7 @@ export interface CalculatorMeta {
   categoryLabel: string;
   shortDescription: string;
   isPopular?: boolean;
+  isPublicDirectory?: boolean;
   formula: string;
   formulaExplanation: string;
   assumptions: string[];
@@ -50,17 +53,15 @@ export interface CalculatorMeta {
 }
 
 export const CALCULATOR_CATEGORIES: Array<{ id: CalculatorCategory; label: string; count: number }> = [
-  { id: 'all', label: 'All 38 Calculators', count: 38 },
-  { id: 'investments', label: 'Mutual Funds & Investments', count: 13 },
-  { id: 'government', label: 'Govt. Savings & Fixed Income', count: 10 },
-  { id: 'loans', label: 'Loans & Interest', count: 6 },
-  { id: 'tax', label: 'Tax, Salary & Employment', count: 6 },
-  { id: 'trading', label: 'Stock Trading & Brokerage', count: 3 },
+  { id: 'all', label: 'All 26 Calculators', count: 26 },
+  { id: 'investments', label: 'Mutual Funds & Investments', count: 12 },
+  { id: 'government', label: 'Govt. Savings & Investment Schemes', count: 10 },
+  { id: 'loans-tax-salary', label: 'Loans, Tax & Salary', count: 4 },
 ];
 
 export const CALCULATOR_CATALOG: CalculatorMeta[] = [
   // =========================================================================
-  // 1. MUTUAL FUNDS AND INVESTMENTS (13)
+  // 1. MUTUAL FUNDS AND INVESTMENTS (12 Public, 2 Preserved)
   // =========================================================================
   {
     id: 'sip',
@@ -70,6 +71,7 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     categoryLabel: 'Mutual Funds & Investments',
     shortDescription: 'Calculate expected returns on monthly Systematic Investment Plans with rupee-cost averaging.',
     isPopular: true,
+    isPublicDirectory: true,
     formula: 'FV = P × [((1 + i)ⁿ - 1) / i] × (1 + i)',
     formulaExplanation: 'P = Monthly installment, i = Effective monthly return rate ((1 + r)^(1/12) - 1), n = Total months. Beginning-of-month convention (Annuity Due).',
     assumptions: [
@@ -78,7 +80,7 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
       'Taxes and fund expense ratios are not deducted.',
     ],
     workedExample: {
-      inputSummary: 'Monthly: ₹10,000 | Expected Return: 12% p.a. | Tenure: 10 Years',
+      inputSummary: 'Monthly: ₹10,00,000 | Expected Return: 12% p.a. | Tenure: 10 Years',
       expectedResult: 'Invested: ₹12,00,000 | Est. Returns: ₹11,23,391 | Total Value: ₹23,23,391',
       explanation: 'Over 120 months, compounding builds wealth exceeding the principal invested.',
     },
@@ -97,6 +99,7 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     categoryLabel: 'Mutual Funds & Investments',
     shortDescription: 'Calculate the future growth of a one-time lumpsum mutual fund or equity investment.',
     isPopular: true,
+    isPublicDirectory: true,
     formula: 'FV = P × (1 + r)ⁿ',
     formulaExplanation: 'P = Initial one-time investment, r = Annual return rate in decimal, n = Duration in years.',
     assumptions: [
@@ -123,6 +126,7 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     categoryLabel: 'Mutual Funds & Investments',
     shortDescription: 'Plan periodic systematic cash withdrawals from your mutual fund corpus without rapid depletion.',
     isPopular: true,
+    isPublicDirectory: true,
     formula: 'Balance_t = (Balance_{t-1} - Withdrawal) × (1 + i)',
     formulaExplanation: 'Withdrawal occurs at the beginning of each month, and remaining balance continues to compound.',
     assumptions: [
@@ -150,7 +154,8 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     category: 'investments',
     categoryLabel: 'Mutual Funds & Investments',
     shortDescription: 'Forecast absolute and annualized mutual fund returns across SIP and Lumpsum modes.',
-    isPopular: true,
+    isPopular: false,
+    isPublicDirectory: false,
     formula: 'Absolute Return = [(FV - Invested) / Invested] × 100',
     formulaExplanation: 'Differentiates between total percentage gain (Absolute) and compound annual rate (CAGR / Annualized).',
     assumptions: [
@@ -176,6 +181,7 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     categoryLabel: 'Mutual Funds & Investments',
     shortDescription: 'Calculate accelerated wealth creation by stepping up your monthly SIP with annual salary hikes.',
     isPopular: true,
+    isPublicDirectory: true,
     formula: 'Monthly SIP increases annually: P_{y} = P_{1} × (1 + stepUpPercent)^{y-1}',
     formulaExplanation: 'Models annual step-ups at 12-month boundaries while compounding monthly.',
     assumptions: [
@@ -196,12 +202,44 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     ],
   },
   {
+    id: 'step-up-swp',
+    slug: 'step-up-swp-calculator',
+    name: 'Step-Up SWP Calculator',
+    category: 'investments',
+    categoryLabel: 'Mutual Funds & Investments',
+    shortDescription: 'Plan inflation-adjusted systematic withdrawals with annual percentage increases in payout.',
+    isPopular: true,
+    isPublicDirectory: true,
+    formula: 'W_{y} = W_{1} × (1 + stepUpPercent)^{y-1} | Balance_t = (Balance_{t-1} + Interest) - W_y',
+    formulaExplanation: 'Increases monthly withdrawal rate annually to protect retirement purchasing power against inflation.',
+    assumptions: [
+      'Monthly withdrawal steps up automatically after each 12-month period.',
+      'Remaining balance earns expected annual compound return.',
+      'Withdrawals cease if corpus is exhausted.',
+    ],
+    workedExample: {
+      inputSummary: 'Corpus: ₹50,00,000 | Initial Withdrawal: ₹30,000/mo | Step-Up: 5% Yearly | Return: 9% | Tenure: 10 Yrs',
+      expectedResult: 'Total Withdrawn: ₹45,28,348 | Remaining Balance: ~₹55.7 Lakh',
+      explanation: 'A 5% step-up counters inflation while the corpus remains well-funded at 9% returns.',
+    },
+    disclaimer: 'Past performance does not guarantee future results. SWP withdrawals may attract capital gains tax.',
+    fields: [
+      { id: 'totalCorpus', label: 'Initial Corpus Amount', defaultValue: 5000000, min: 100000, max: 50000000, step: 50000, unit: '₹', isCurrency: true },
+      { id: 'monthlyWithdrawal', label: 'Initial Monthly Withdrawal', defaultValue: 30000, min: 1000, max: 500000, step: 1000, unit: '₹', isCurrency: true },
+      { id: 'stepUpPercentage', label: 'Annual Step-Up in Withdrawal', defaultValue: 5, min: 1, max: 25, step: 1, unit: '%' },
+      { id: 'expectedAnnualReturn', label: 'Expected Return Rate (p.a.)', defaultValue: 9, min: 1, max: 20, step: 0.5, unit: '%' },
+      { id: 'tenureYears', label: 'Withdrawal Period', defaultValue: 10, min: 1, max: 35, step: 1, unit: 'Years' },
+    ],
+  },
+  {
     id: 'roi',
     slug: 'roi-calculator',
     name: 'ROI Calculator',
     category: 'investments',
     categoryLabel: 'Mutual Funds & Investments',
     shortDescription: 'Measure the exact efficiency and percentage return on an investment or business initiative.',
+    isPopular: false,
+    isPublicDirectory: true,
     formula: 'ROI = [(Final Value - Initial Investment) / Initial Investment] × 100',
     formulaExplanation: 'Calculates net percentage gain and optional annualized ROI when duration is provided.',
     assumptions: ['Does not include taxes, transaction costs, or inflation adjustments.'],
@@ -214,7 +252,7 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     fields: [
       { id: 'initialInvestment', label: 'Initial Investment', defaultValue: 200000, min: 1000, max: 10000000, step: 5000, unit: '₹', isCurrency: true },
       { id: 'finalValue', label: 'Final Value / Returns', defaultValue: 350000, min: 1000, max: 50000000, step: 5000, unit: '₹', isCurrency: true },
-      { id: 'durationYears', label: 'Holding Period (Optional)', defaultValue: 3, min: 1, max: 30, step: 1, unit: 'Years' },
+      { id: 'durationYears', label: 'Holding Period (Optional)', defaultValue: 3, min: 1, max: 30, step: 1, unit: 'Years', isOptional: true },
     ],
   },
   {
@@ -225,6 +263,7 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     categoryLabel: 'Mutual Funds & Investments',
     shortDescription: 'Calculate the smooth Compound Annual Growth Rate of investments over multi-year horizons.',
     isPopular: true,
+    isPublicDirectory: true,
     formula: 'CAGR = (Ending Value / Beginning Value)^(1 / Years) - 1',
     formulaExplanation: 'Smoothens out intermediate annual volatility to reveal the geometric annualized growth rate.',
     assumptions: ['Investments remain invested without intermediate withdrawals.'],
@@ -247,6 +286,8 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     category: 'investments',
     categoryLabel: 'Mutual Funds & Investments',
     shortDescription: 'Determine the accurate annualized return for irregular cash inflows, outflows, and SIPs.',
+    isPopular: false,
+    isPublicDirectory: true,
     formula: '∑ [ CF_i / (1 + Rate)^((Date_i - Date_0) / 365) ] = 0',
     formulaExplanation: 'High-precision numerical root finder (Newton-Raphson + Bisection) for irregular date cash flows.',
     assumptions: ['All cash flows occurred on the specified calendar dates.'],
@@ -258,9 +299,9 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     disclaimer: 'XIRR requires at least one outflow (negative) and one inflow/current value (positive).',
     fields: [
       { id: 'installment1', label: 'First Investment (Day 0)', defaultValue: 25000, min: 1000, max: 5000000, step: 1000, unit: '₹', isCurrency: true },
-      { id: 'installment2', label: 'Second Investment (Day 90)', defaultValue: 25000, min: 1000, max: 5000000, step: 1000, unit: '₹', isCurrency: true },
-      { id: 'installment3', label: 'Third Investment (Day 180)', defaultValue: 25000, min: 1000, max: 5000000, step: 1000, unit: '₹', isCurrency: true },
-      { id: 'currentValuation', label: 'Current Valuation (Day 365)', defaultValue: 88000, min: 1000, max: 20000000, step: 1000, unit: '₹', isCurrency: true },
+      { id: 'installment2', label: 'Second Investment (Day 90)', defaultValue: 0, min: 0, max: 5000000, step: 1000, unit: '₹', isCurrency: true, isOptional: true },
+      { id: 'installment3', label: 'Third Investment (Day 180)', defaultValue: 0, min: 0, max: 5000000, step: 1000, unit: '₹', isCurrency: true, isOptional: true },
+      { id: 'currentValuation', label: 'Current Valuation (Day 365)', defaultValue: 30000, min: 1000, max: 20000000, step: 1000, unit: '₹', isCurrency: true },
     ],
   },
   {
@@ -270,6 +311,8 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     category: 'investments',
     categoryLabel: 'Mutual Funds & Investments',
     shortDescription: 'Calculate the Internal Rate of Return for periodic equal-interval business and investment projects.',
+    isPopular: false,
+    isPublicDirectory: false,
     formula: 'NPV = ∑ [ CF_t / (1 + IRR)ᵗ ] = 0',
     formulaExplanation: 'Finds the discount rate that makes the Net Present Value of all periodic cash flows equal zero.',
     assumptions: ['Cash flows occur at regular periodic intervals (annual or quarterly).'],
@@ -294,6 +337,7 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     categoryLabel: 'Mutual Funds & Investments',
     shortDescription: 'Calculate weighted average price per share across multiple buy orders and compute unrealized P&L.',
     isPopular: true,
+    isPublicDirectory: true,
     formula: 'Avg Price = (∑ Qty_i × Price_i) / (∑ Qty_i)',
     formulaExplanation: 'Weights each purchase price by its respective quantity to derive the break-even holding price.',
     assumptions: ['Does not include statutory exchange charges or brokerage fees.'],
@@ -318,6 +362,8 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     category: 'investments',
     categoryLabel: 'Mutual Funds & Investments',
     shortDescription: 'Discover the future cost of living and the eroding purchasing power of money over time.',
+    isPopular: false,
+    isPublicDirectory: true,
     formula: 'Future Cost = PV × (1 + r)ⁿ | Purchasing Power = PV / (1 + r)ⁿ',
     formulaExplanation: 'Computes future expense escalation and what future funds would be equivalent to today.',
     assumptions: ['Inflation rate remains constant over the chosen time horizon.'],
@@ -341,6 +387,7 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     categoryLabel: 'Mutual Funds & Investments',
     shortDescription: 'Calculate the target net worth needed for Financial Independence and Early Retirement.',
     isPopular: true,
+    isPublicDirectory: true,
     formula: 'Target Corpus = Annual Expenses at FIRE / Safe Withdrawal Rate (e.g. 25x rule at 4%)',
     formulaExplanation: 'Inflates current expenses to the target FIRE age, then computes corpus using SWR.',
     assumptions: [
@@ -359,17 +406,18 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
       { id: 'currentMonthlyExpenses', label: 'Current Monthly Expenses', defaultValue: 60000, min: 10000, max: 1000000, step: 5000, unit: '₹', isCurrency: true },
       { id: 'expectedInflationRate', label: 'Expected Inflation Rate (p.a.)', defaultValue: 6, min: 3, max: 15, step: 0.5, unit: '%' },
       { id: 'safeWithdrawalRate', label: 'Safe Withdrawal Rate', defaultValue: 4, min: 2.5, max: 6, step: 0.25, unit: '%' },
-      { id: 'currentSavings', label: 'Current Investments / Savings', defaultValue: 1000000, min: 0, max: 50000000, step: 50000, unit: '₹', isCurrency: true },
+      { id: 'currentSavings', label: 'Current Investments / Savings', defaultValue: 0, min: 0, max: 50000000, step: 50000, unit: '₹', isCurrency: true, isOptional: true },
     ],
   },
   {
     id: 'retirement',
     slug: 'retirement-calculator',
-    name: 'Retirement Calculator',
+    name: 'Retirement Corpus Calculator',
     category: 'investments',
     categoryLabel: 'Mutual Funds & Investments',
     shortDescription: 'Plan your retirement corpus, shortfall, and required monthly savings to live comfortably.',
     isPopular: true,
+    isPublicDirectory: true,
     formula: 'Corpus = Annual Expense × [(1 - (1 + RealRate)⁻ⁿ) / RealRate]',
     formulaExplanation: 'Computes growing annuity present value accounting for inflation and post-retirement yield.',
     assumptions: [
@@ -394,16 +442,17 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
   },
 
   // =========================================================================
-  // 2. GOVERNMENT SAVINGS AND FIXED INCOME SCHEMES (10)
+  // 2. GOVERNMENT SAVINGS AND INVESTMENT SCHEMES (10)
   // =========================================================================
   {
     id: 'ssy',
     slug: 'ssy-calculator',
     name: 'Sukanya Samriddhi Yojana (SSY) Calculator',
     category: 'government',
-    categoryLabel: 'Govt. Savings & Fixed Income',
+    categoryLabel: 'Govt. Savings & Investment Schemes',
     shortDescription: 'Calculate maturity corpus under the government girl child scheme with guaranteed 8.2% p.a. interest.',
     isPopular: true,
+    isPublicDirectory: true,
     formula: 'Compounded Annually over 21 Years (Deposits for first 15 years)',
     formulaExplanation: 'Official rate 8.2% p.a. compounded annually. Contributions mandatory for first 15 years; matures after 21 years.',
     assumptions: [
@@ -429,9 +478,10 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     slug: 'ppf-calculator',
     name: 'PPF Calculator',
     category: 'government',
-    categoryLabel: 'Govt. Savings & Fixed Income',
+    categoryLabel: 'Govt. Savings & Investment Schemes',
     shortDescription: 'Calculate guaranteed tax-free returns under Public Provident Fund (7.1% p.a.) with Section 80C benefits.',
     isPopular: true,
+    isPublicDirectory: true,
     formula: 'A = P × [((1 + r)ⁿ - 1) / r] × (1 + r)',
     formulaExplanation: 'Official 7.1% p.a. interest compounded annually at year end on minimum balance between 5th and last day of month.',
     assumptions: [
@@ -457,9 +507,10 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     slug: 'epf-calculator',
     name: 'EPF Calculator',
     category: 'government',
-    categoryLabel: 'Govt. Savings & Fixed Income',
+    categoryLabel: 'Govt. Savings & Investment Schemes',
     shortDescription: 'Calculate your Employee Provident Fund retirement corpus with 8.25% interest and employer share.',
     isPopular: true,
+    isPublicDirectory: true,
     formula: 'Employee: 12% of Basic+DA | Employer: 3.67% to EPF (8.33% to EPS capped at ₹1,250)',
     formulaExplanation: 'Compounded annually at 8.25% p.a. based on CBT EPFO notification.',
     assumptions: [
@@ -479,17 +530,18 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
       { id: 'currentAge', label: 'Current Age', defaultValue: 28, min: 18, max: 55, step: 1, unit: 'Years' },
       { id: 'retirementAge', label: 'Retirement Age', defaultValue: 58, min: 55, max: 65, step: 1, unit: 'Years' },
       { id: 'annualSalaryIncrementRate', label: 'Annual Salary Hike', defaultValue: 5, min: 0, max: 20, step: 0.5, unit: '%' },
-      { id: 'existingEpfBalance', label: 'Current EPF Balance (if any)', defaultValue: 100000, min: 0, max: 50000000, step: 10000, unit: '₹', isCurrency: true },
+      { id: 'existingEpfBalance', label: 'Current EPF Balance (if any)', defaultValue: 0, min: 0, max: 50000000, step: 10000, unit: '₹', isCurrency: true, isOptional: true },
     ],
   },
   {
     id: 'fd',
     slug: 'fd-calculator',
-    name: 'Fixed Deposit (FD) Calculator',
+    name: 'FD Calculator',
     category: 'government',
-    categoryLabel: 'Govt. Savings & Fixed Income',
+    categoryLabel: 'Govt. Savings & Investment Schemes',
     shortDescription: 'Calculate maturity value and interest payout for bank fixed deposits with quarterly compounding.',
     isPopular: true,
+    isPublicDirectory: true,
     formula: 'Cumulative: A = P × (1 + r/4)^(4×t) | Non-Cumulative: Interest = P × r × t',
     formulaExplanation: 'Quarterly compounding is the standard Indian banking norm for cumulative FDs.',
     assumptions: [
@@ -514,9 +566,10 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     slug: 'rd-calculator',
     name: 'Recurring Deposit (RD) Calculator',
     category: 'government',
-    categoryLabel: 'Govt. Savings & Fixed Income',
+    categoryLabel: 'Govt. Savings & Investment Schemes',
     shortDescription: 'Calculate total maturity amount for monthly recurring deposits with quarterly compounding.',
     isPopular: true,
+    isPublicDirectory: true,
     formula: 'M = ∑ [ P × (1 + r/4)^(4 × (n - i + 1) / 12) ]',
     formulaExplanation: 'Post office and bank quarterly compounding convention applied to each monthly installment.',
     assumptions: [
@@ -539,10 +592,12 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
   {
     id: 'nsc',
     slug: 'nsc-calculator',
-    name: 'National Savings Certificate (NSC) Calculator',
+    name: 'NSC Calculator',
     category: 'government',
-    categoryLabel: 'Govt. Savings & Fixed Income',
+    categoryLabel: 'Govt. Savings & Investment Schemes',
     shortDescription: 'Calculate guaranteed 5-year post office NSC returns at 7.7% interest with Section 80C tax deduction.',
+    isPopular: false,
+    isPublicDirectory: true,
     formula: 'A = P × (1 + r)⁵',
     formulaExplanation: 'Interest compounded annually at 7.7% p.a. and paid at maturity after 5 years.',
     assumptions: [
@@ -566,8 +621,10 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     slug: 'apy-calculator',
     name: 'Atal Pension Yojana (APY) Calculator',
     category: 'government',
-    categoryLabel: 'Govt. Savings & Fixed Income',
+    categoryLabel: 'Govt. Savings & Investment Schemes',
     shortDescription: 'Calculate required monthly contributions for guaranteed lifetime pensions of ₹1,000 to ₹5,000/mo.',
+    isPopular: false,
+    isPublicDirectory: true,
     formula: 'PFRDA Statutory Age Matrix Contribution Schedule',
     formulaExplanation: 'Determines monthly contribution based on subscriber entry age (18-40) and selected pension slab.',
     assumptions: [
@@ -589,11 +646,12 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
   {
     id: 'po-mis',
     slug: 'post-office-mis-calculator',
-    name: 'Post Office MIS Calculator',
+    name: 'Post Office Monthly Income Scheme (MIS) Calculator',
     category: 'government',
-    categoryLabel: 'Govt. Savings & Fixed Income',
+    categoryLabel: 'Govt. Savings & Investment Schemes',
     shortDescription: 'Calculate monthly guaranteed passive income from Post Office Monthly Income Scheme (7.4% p.a.).',
     isPopular: true,
+    isPublicDirectory: true,
     formula: 'Monthly Income = (Deposit Amount × 7.4%) / 12',
     formulaExplanation: 'Guaranteed monthly interest payout for 5 years with principal returned 100% intact at maturity.',
     assumptions: [
@@ -617,9 +675,10 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     slug: 'scss-calculator',
     name: 'Senior Citizens Savings Scheme (SCSS) Calculator',
     category: 'government',
-    categoryLabel: 'Govt. Savings & Fixed Income',
+    categoryLabel: 'Govt. Savings & Investment Schemes',
     shortDescription: 'Calculate quarterly interest income for seniors (age 60+) with guaranteed 8.2% p.a. return.',
     isPopular: true,
+    isPublicDirectory: true,
     formula: 'Quarterly Payout = (Deposit Amount × 8.2%) / 4',
     formulaExplanation: 'Statutory government interest paid on the 1st of April, July, October, and January.',
     assumptions: [
@@ -642,11 +701,12 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
   {
     id: 'nps',
     slug: 'nps-calculator',
-    name: 'NPS Calculator',
+    name: 'National Pension System (NPS) Calculator',
     category: 'government',
-    categoryLabel: 'Govt. Savings & Fixed Income',
+    categoryLabel: 'Govt. Savings & Investment Schemes',
     shortDescription: 'Forecast your National Pension System corpus, tax-free lumpsum withdrawal, and monthly annuity.',
     isPopular: true,
+    isPublicDirectory: true,
     formula: 'Corpus = Monthly SIP compounded; Min 40% utilized for Annuity pension, up to 60% Lumpsum',
     formulaExplanation: 'Models asset allocation growth till age 60, followed by statutory annuity conversion.',
     assumptions: [
@@ -671,8 +731,61 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
   },
 
   // =========================================================================
-  // 3. LOANS AND INTEREST (6)
+  // 3. LOANS, TAX AND SALARY (4 Public) & PRESERVED LOANS
   // =========================================================================
+  {
+    id: 'home-loan-emi',
+    slug: 'home-loan-emi-calculator',
+    name: 'Home Loan EMI Calculator',
+    category: 'loans-tax-salary',
+    categoryLabel: 'Loans, Tax & Salary',
+    shortDescription: 'Plan your home loan EMI, view multi-year amortization, and see interest savings with prepayments.',
+    isPopular: true,
+    isPublicDirectory: true,
+    formula: 'EMI = P × r × (1 + r)ⁿ / ((1 + r)ⁿ - 1)',
+    formulaExplanation: 'Standard reducing balance EMI with optional annual prepayment simulation.',
+    assumptions: [
+      'Floating rates are assumed steady over the tenure.',
+      'Prepayments directly reduce the principal balance.',
+    ],
+    workedExample: {
+      inputSummary: 'Loan: ₹40,00,000 | Rate: 8.5% p.a. | Tenure: 20 Years | Annual Prepay: ₹50,000',
+      expectedResult: 'Monthly EMI: ₹34,713 | Total Interest: ₹43.3 Lakh | Prepayment Saves: ~₹8.4 Lakh & 38 Months',
+      explanation: 'An extra ₹50,000 paid once a year cuts more than 3 years off your loan.',
+    },
+    disclaimer: 'Home loan interest is eligible for tax deduction u/s 24(b) up to ₹2,00,000/yr for self-occupied property.',
+    fields: [
+      { id: 'loanAmount', label: 'Home Loan Amount', defaultValue: 4000000, min: 100000, max: 100000000, step: 100000, unit: '₹', isCurrency: true },
+      { id: 'annualInterestRate', label: 'Interest Rate (p.a.)', defaultValue: 8.5, min: 6.5, max: 15, step: 0.1, unit: '%' },
+      { id: 'tenureYears', label: 'Tenure', defaultValue: 20, min: 1, max: 30, step: 1, unit: 'Years' },
+      { id: 'annualPrepayment', label: 'Annual Prepayment (Optional)', defaultValue: 0, min: 0, max: 1000000, step: 10000, unit: '₹', isCurrency: true, isOptional: true },
+    ],
+  },
+  {
+    id: 'car-loan-emi',
+    slug: 'car-loan-emi-calculator',
+    name: 'Car and Personal Loan Calculator',
+    category: 'loans-tax-salary',
+    categoryLabel: 'Loans, Tax & Salary',
+    shortDescription: 'Calculate vehicle and personal loan monthly payments, down payment impact, and total financing costs.',
+    isPopular: true,
+    isPublicDirectory: true,
+    formula: 'Loan = On-Road Price - Down Payment; EMI = P × r × (1+r)ⁿ / ((1+r)ⁿ - 1)',
+    formulaExplanation: 'Calculates net finance required after down payment and computes exact monthly installment.',
+    assumptions: ['Tenure typically ranges between 1 and 7 years.'],
+    workedExample: {
+      inputSummary: 'Car Price: ₹12,00,000 | Down Payment: ₹3,00,000 | Loan: ₹9,00,000 @ 9.0% for 5 Years',
+      expectedResult: 'Monthly EMI: ₹18,682 | Total Interest: ₹2,20,909 | Total Car Cost: ₹14,29,909',
+      explanation: 'Financing ₹9 Lakhs for 5 years at 9% incurs ₹2.21 Lakh in total interest.',
+    },
+    disclaimer: 'Insurance, road tax, and extended warranties are included in on-road price estimates.',
+    fields: [
+      { id: 'vehicleOnRoadPrice', label: 'On-Road Vehicle Price', defaultValue: 1200000, min: 200000, max: 20000000, step: 25000, unit: '₹', isCurrency: true },
+      { id: 'downPayment', label: 'Down Payment Amount (Optional)', defaultValue: 0, min: 0, max: 15000000, step: 25000, unit: '₹', isCurrency: true, isOptional: true },
+      { id: 'annualInterestRate', label: 'Interest Rate (p.a.)', defaultValue: 9.0, min: 6.5, max: 18, step: 0.25, unit: '%' },
+      { id: 'tenureYears', label: 'Loan Tenure', defaultValue: 5, min: 1, max: 7, step: 1, unit: 'Years' },
+    ],
+  },
   {
     id: 'emi',
     slug: 'emi-calculator',
@@ -680,7 +793,8 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     category: 'loans',
     categoryLabel: 'Loans & Interest',
     shortDescription: 'Calculate exact Equated Monthly Installments (EMI), interest breakdown, and amortization schedule.',
-    isPopular: true,
+    isPopular: false,
+    isPublicDirectory: false,
     formula: 'EMI = P × r × (1 + r)ⁿ / ((1 + r)ⁿ - 1)',
     formulaExplanation: 'P = Principal loan amount, r = Monthly interest rate (Annual / 12 / 100), n = Tenure in months.',
     assumptions: [
@@ -700,63 +814,14 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     ],
   },
   {
-    id: 'home-loan-emi',
-    slug: 'home-loan-emi-calculator',
-    name: 'Home Loan EMI Calculator',
-    category: 'loans',
-    categoryLabel: 'Loans & Interest',
-    shortDescription: 'Plan your home loan EMI, view multi-year amortization, and see interest savings with prepayments.',
-    isPopular: true,
-    formula: 'EMI = P × r × (1 + r)ⁿ / ((1 + r)ⁿ - 1)',
-    formulaExplanation: 'Standard reducing balance EMI with optional annual prepayment simulation.',
-    assumptions: [
-      'Floating rates are assumed steady over the tenure.',
-      'Prepayments directly reduce the principal balance.',
-    ],
-    workedExample: {
-      inputSummary: 'Loan: ₹40,00,000 | Rate: 8.5% p.a. | Tenure: 20 Years | Annual Prepay: ₹50,000',
-      expectedResult: 'Monthly EMI: ₹34,713 | Total Interest: ₹43.3 Lakh | Prepayment Saves: ~₹8.4 Lakh & 38 Months',
-      explanation: 'An extra ₹50,000 paid once a year cuts more than 3 years off your loan.',
-    },
-    disclaimer: 'Home loan interest is eligible for tax deduction u/s 24(b) up to ₹2,00,000/yr for self-occupied property.',
-    fields: [
-      { id: 'loanAmount', label: 'Home Loan Amount', defaultValue: 4000000, min: 100000, max: 100000000, step: 100000, unit: '₹', isCurrency: true },
-      { id: 'annualInterestRate', label: 'Interest Rate (p.a.)', defaultValue: 8.5, min: 6.5, max: 15, step: 0.1, unit: '%' },
-      { id: 'tenureYears', label: 'Tenure', defaultValue: 20, min: 1, max: 30, step: 1, unit: 'Years' },
-      { id: 'annualPrepayment', label: 'Annual Prepayment (Optional)', defaultValue: 50000, min: 0, max: 1000000, step: 10000, unit: '₹', isCurrency: true },
-    ],
-  },
-  {
-    id: 'car-loan-emi',
-    slug: 'car-loan-emi-calculator',
-    name: 'Car Loan EMI Calculator',
-    category: 'loans',
-    categoryLabel: 'Loans & Interest',
-    shortDescription: 'Calculate car loan monthly payments, down payment impact, and total ownership financing costs.',
-    isPopular: true,
-    formula: 'Loan = On-Road Price - Down Payment; EMI = P × r × (1+r)ⁿ / ((1+r)ⁿ - 1)',
-    formulaExplanation: 'Calculates net finance required after down payment and computes exact monthly installment.',
-    assumptions: ['Tenure typically ranges between 1 and 7 years.'],
-    workedExample: {
-      inputSummary: 'Car Price: ₹12,00,000 | Down Payment: ₹3,00,000 | Loan: ₹9,00,000 @ 9.0% for 5 Years',
-      expectedResult: 'Monthly EMI: ₹18,682 | Total Interest: ₹2,20,909 | Total Car Cost: ₹14,29,909',
-      explanation: 'Financing ₹9 Lakhs for 5 years at 9% incurs ₹2.21 Lakh in total interest.',
-    },
-    disclaimer: 'Insurance, road tax, and extended warranties are included in on-road price estimates.',
-    fields: [
-      { id: 'vehicleOnRoadPrice', label: 'On-Road Vehicle Price', defaultValue: 1200000, min: 200000, max: 20000000, step: 25000, unit: '₹', isCurrency: true },
-      { id: 'downPayment', label: 'Down Payment Amount', defaultValue: 300000, min: 0, max: 15000000, step: 25000, unit: '₹', isCurrency: true },
-      { id: 'annualInterestRate', label: 'Interest Rate (p.a.)', defaultValue: 9.0, min: 6.5, max: 18, step: 0.25, unit: '%' },
-      { id: 'tenureYears', label: 'Loan Tenure', defaultValue: 5, min: 1, max: 7, step: 1, unit: 'Years' },
-    ],
-  },
-  {
     id: 'simple-interest',
     slug: 'simple-interest-calculator',
     name: 'Simple Interest Calculator',
     category: 'loans',
     categoryLabel: 'Loans & Interest',
     shortDescription: 'Calculate simple non-compounding interest on principal loans and deposits effortlessly.',
+    isPopular: false,
+    isPublicDirectory: false,
     formula: 'SI = (P × R × T) / 100',
     formulaExplanation: 'P = Principal amount, R = Annual interest rate in %, T = Time period in years.',
     assumptions: ['Interest does not earn interest; calculated strictly on initial principal.'],
@@ -779,7 +844,8 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     category: 'loans',
     categoryLabel: 'Loans & Interest',
     shortDescription: 'Calculate compound interest across Annually, Half-Yearly, Quarterly, Monthly and Daily frequencies.',
-    isPopular: true,
+    isPopular: false,
+    isPublicDirectory: false,
     formula: 'A = P × (1 + r/n)^(n×t)',
     formulaExplanation: 'P = Principal, r = Annual rate, n = Compounding frequency per year, t = Time in years.',
     assumptions: ['Interest earned is reinvested automatically at each compounding period.'],
@@ -802,7 +868,8 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     category: 'loans',
     categoryLabel: 'Loans & Interest',
     shortDescription: 'Expose the true effective cost difference between misleading flat interest rates and reducing rates.',
-    isPopular: true,
+    isPopular: false,
+    isPublicDirectory: false,
     formula: 'Flat: Interest = P × R × T | Reducing: EMI = P × r × (1+r)ⁿ / ((1+r)ⁿ - 1)',
     formulaExplanation: 'Reveals that a stated 8% flat rate is actually equivalent to nearly ~14.7% on reducing balance.',
     assumptions: ['Compares identical principal and loan tenure.'],
@@ -820,44 +887,17 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
   },
 
   // =========================================================================
-  // 4. TAX, SALARY AND EMPLOYMENT (6)
+  // 4. TAX, SALARY AND EMPLOYMENT (PRESERVED & PUBLIC)
   // =========================================================================
-  {
-    id: 'income-tax',
-    slug: 'income-tax-calculator',
-    name: 'Income Tax Calculator',
-    category: 'tax',
-    categoryLabel: 'Tax, Salary & Employment',
-    shortDescription: 'Compare your exact tax liability under New Regime (Budget 2024 revised) vs Old Regime.',
-    isPopular: true,
-    formula: 'Tax = Slab Rate × Taxable Income - Section 87A Rebate + 4% Health & Education Cess',
-    formulaExplanation: 'Incorporates FY 2024-25 revisions: ₹75,000 standard deduction and ₹7 Lakh rebate under New Regime.',
-    assumptions: [
-      'Applicable for individual tax residents for Assessment Year 2025-26.',
-      'Surcharge applies if total income exceeds ₹50 Lakhs.',
-    ],
-    workedExample: {
-      inputSummary: 'Gross Income: ₹10,00,000 | New Regime',
-      expectedResult: 'Taxable Income: ₹9,25,000 | Tax Before Cess: ₹42,500 | Cess (4%): ₹1,700 | Total Tax: ₹44,200',
-      explanation: 'Under the revised New Regime, a ₹10 Lakh salary incurs just ₹44,200 in total tax.',
-    },
-    officialSource: 'Income Tax Department, Ministry of Finance (Union Budget 2024-25)',
-    disclaimer: 'Tax laws are subject to amendments. Consult a chartered accountant for complex capital gains and foreign assets.',
-    fields: [
-      { id: 'annualGrossIncome', label: 'Annual Gross Income', defaultValue: 1000000, min: 100000, max: 20000000, step: 25000, unit: '₹', isCurrency: true },
-      { id: 'section80C', label: 'Section 80C Deductions (Old Regime)', defaultValue: 150000, min: 0, max: 150000, step: 5000, unit: '₹', isCurrency: true },
-      { id: 'section80D', label: 'Section 80D Health Insurance (Old)', defaultValue: 25000, min: 0, max: 100000, step: 2500, unit: '₹', isCurrency: true },
-      { id: 'hraExemption', label: 'HRA Exemption (Old Regime)', defaultValue: 60000, min: 0, max: 500000, step: 5000, unit: '₹', isCurrency: true },
-    ],
-  },
   {
     id: 'hra',
     slug: 'hra-calculator',
     name: 'HRA Calculator',
-    category: 'tax',
-    categoryLabel: 'Tax, Salary & Employment',
+    category: 'loans-tax-salary',
+    categoryLabel: 'Loans, Tax & Salary',
     shortDescription: 'Calculate your tax-exempt House Rent Allowance u/s 10(13A) of the Income Tax Act.',
     isPopular: true,
+    isPublicDirectory: true,
     formula: 'Exempt HRA = Min(Actual HRA, Rent - 10% Basic, 50%/40% Basic)',
     formulaExplanation: 'Statutory exemption under Rule 2A: Minimum of actual HRA received, rent minus 10% basic, and metro/non-metro cap.',
     assumptions: [
@@ -879,13 +919,70 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     ],
   },
   {
+    id: 'salary',
+    slug: 'salary-calculator',
+    name: 'Salary / CTC In-Hand Calculator',
+    category: 'loans-tax-salary',
+    categoryLabel: 'Loans, Tax & Salary',
+    shortDescription: 'Calculate your real monthly take-home salary from your annual Cost to Company (CTC) after PF, PT, and TDS.',
+    isPopular: true,
+    isPublicDirectory: true,
+    formula: 'In-Hand = Gross Monthly Salary - Employee PF (12%) - Professional Tax - Estimated TDS',
+    formulaExplanation: 'Translates annual CTC package into actual bank-credited monthly disposable income.',
+    assumptions: [
+      'Basic salary is structured at 40% of fixed pay.',
+      'Employee PF at 12% of basic and standard Professional Tax of ₹200/mo.',
+      'Income tax estimated under the New Regime.',
+    ],
+    workedExample: {
+      inputSummary: 'Annual CTC: ₹12,00,000 | Variable: ₹0',
+      expectedResult: 'Monthly Gross: ₹1,00,000 | Employee PF: ₹4,000 | TDS: ~₹5,580 | Monthly Take-Home: ~₹90,220',
+      explanation: 'A ₹12 Lakh CTC translates to approximately ₹90,220 take-home pay per month.',
+    },
+    disclaimer: 'Actual take-home pay varies with company flexi-benefits, medical insurance, and meal allowances.',
+    fields: [
+      { id: 'annualCTC', label: 'Annual Cost to Company (CTC)', defaultValue: 1200000, min: 100000, max: 10000000, step: 25000, unit: '₹', isCurrency: true },
+      { id: 'bonusOrVariablePay', label: 'Annual Bonus / Variable Pay (Optional)', defaultValue: 0, min: 0, max: 3000000, step: 10000, unit: '₹', isCurrency: true, isOptional: true },
+    ],
+  },
+  {
+    id: 'income-tax',
+    slug: 'income-tax-calculator',
+    name: 'Income Tax Calculator',
+    category: 'tax',
+    categoryLabel: 'Tax, Salary & Employment',
+    shortDescription: 'Compare your exact tax liability under New Regime (Budget 2024 revised) vs Old Regime.',
+    isPopular: false,
+    isPublicDirectory: false,
+    formula: 'Tax = Slab Rate × Taxable Income - Section 87A Rebate + 4% Health & Education Cess',
+    formulaExplanation: 'Incorporates FY 2024-25 revisions: ₹75,000 standard deduction and ₹7 Lakh rebate under New Regime.',
+    assumptions: [
+      'Applicable for individual tax residents for Assessment Year 2025-26.',
+      'Surcharge applies if total income exceeds ₹50 Lakhs.',
+    ],
+    workedExample: {
+      inputSummary: 'Gross Income: ₹10,00,000 | New Regime',
+      expectedResult: 'Taxable Income: ₹9,25,000 | Tax Before Cess: ₹42,500 | Cess (4%): ₹1,700 | Total Tax: ₹44,200',
+      explanation: 'Under the revised New Regime, a ₹10 Lakh salary incurs just ₹44,200 in total tax.',
+    },
+    officialSource: 'Income Tax Department, Ministry of Finance (Union Budget 2024-25)',
+    disclaimer: 'Tax laws are subject to amendments. Consult a chartered accountant for complex capital gains and foreign assets.',
+    fields: [
+      { id: 'annualGrossIncome', label: 'Annual Gross Income', defaultValue: 1000000, min: 100000, max: 20000000, step: 25000, unit: '₹', isCurrency: true },
+      { id: 'section80C', label: 'Section 80C Deductions (Old Regime)', defaultValue: 150000, min: 0, max: 150000, step: 5000, unit: '₹', isCurrency: true },
+      { id: 'section80D', label: 'Section 80D Health Insurance (Old)', defaultValue: 25000, min: 0, max: 100000, step: 2500, unit: '₹', isCurrency: true },
+      { id: 'hraExemption', label: 'HRA Exemption (Old Regime)', defaultValue: 60000, min: 0, max: 500000, step: 5000, unit: '₹', isCurrency: true },
+    ],
+  },
+  {
     id: 'gst',
     slug: 'gst-calculator',
     name: 'GST Calculator',
     category: 'tax',
     categoryLabel: 'Tax, Salary & Employment',
     shortDescription: 'Calculate Goods & Services Tax in Exclusive (Add GST) or Inclusive (Remove GST) mode with CGST/SGST/IGST.',
-    isPopular: true,
+    isPopular: false,
+    isPublicDirectory: false,
     formula: 'Exclusive: GST = P × Rate | Inclusive: Net = P / (1 + Rate)',
     formulaExplanation: 'Determines statutory GST tax liability and splits into CGST & SGST (intrastate) or IGST (interstate).',
     assumptions: ['Standard slab rates of 0%, 5%, 12%, 18%, and 28%.'],
@@ -908,6 +1005,8 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     category: 'tax',
     categoryLabel: 'Tax, Salary & Employment',
     shortDescription: 'Calculate statutory gratuity payout under the Payment of Gratuity Act, 1972 after 5 years of service.',
+    isPopular: false,
+    isPublicDirectory: false,
     formula: 'Gratuity = (15 × Last Monthly Basic+DA × Completed Years) / 26',
     formulaExplanation: 'Based on 26 working days in a month. Capped at the statutory maximum limit of ₹20,00,000.',
     assumptions: [
@@ -933,6 +1032,8 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     category: 'tax',
     categoryLabel: 'Tax, Salary & Employment',
     shortDescription: 'Calculate Tax Deducted at Source across standard sections (194A interest, 194C contractor, 194J professional).',
+    isPopular: false,
+    isPublicDirectory: false,
     formula: 'TDS Amount = Payment Amount × TDS Rate (if Payment > Statutory Threshold)',
     formulaExplanation: 'Applies statutory withholding rate if transaction exceeds section threshold. 20% applies if PAN not furnished.',
     assumptions: ['PAN is furnished by the deductee.'],
@@ -947,32 +1048,6 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
       { id: 'paymentAmount', label: 'Payment Amount', defaultValue: 75000, min: 1000, max: 10000000, step: 5000, unit: '₹', isCurrency: true },
     ],
   },
-  {
-    id: 'salary',
-    slug: 'salary-calculator',
-    name: 'Salary / CTC to In-Hand Calculator',
-    category: 'tax',
-    categoryLabel: 'Tax, Salary & Employment',
-    shortDescription: 'Calculate your real monthly take-home salary from your annual Cost to Company (CTC) after PF, PT, and TDS.',
-    isPopular: true,
-    formula: 'In-Hand = Gross Monthly Salary - Employee PF (12%) - Professional Tax - Estimated TDS',
-    formulaExplanation: 'Translates annual CTC package into actual bank-credited monthly disposable income.',
-    assumptions: [
-      'Basic salary is structured at 40% of fixed pay.',
-      'Employee PF at 12% of basic and standard Professional Tax of ₹200/mo.',
-      'Income tax estimated under the New Regime.',
-    ],
-    workedExample: {
-      inputSummary: 'Annual CTC: ₹12,00,000 | Variable: ₹0',
-      expectedResult: 'Monthly Gross: ₹1,00,000 | Employee PF: ₹4,000 | TDS: ~₹5,580 | Monthly Take-Home: ~₹90,220',
-      explanation: 'A ₹12 Lakh CTC translates to approximately ₹90,220 take-home pay per month.',
-    },
-    disclaimer: 'Actual take-home pay varies with company flexi-benefits, medical insurance, and meal allowances.',
-    fields: [
-      { id: 'annualCTC', label: 'Annual Cost to Company (CTC)', defaultValue: 1200000, min: 100000, max: 10000000, step: 25000, unit: '₹', isCurrency: true },
-      { id: 'bonusOrVariablePay', label: 'Annual Bonus / Variable Pay', defaultValue: 0, min: 0, max: 3000000, step: 10000, unit: '₹', isCurrency: true },
-    ],
-  },
 
   // =========================================================================
   // 5. STOCK TRADING AND BROKERAGE (3)
@@ -984,7 +1059,8 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     category: 'trading',
     categoryLabel: 'Stock Trading & Brokerage',
     shortDescription: 'Calculate total brokerage, STT, Exchange transaction fees, SEBI charges, Stamp Duty, GST, and net profit.',
-    isPopular: true,
+    isPopular: false,
+    isPublicDirectory: false,
     formula: 'Net P&L = Gross P&L - (Brokerage + STT + Exchange + SEBI + Stamp Duty + 18% GST)',
     formulaExplanation: 'Models full statutory charge breakdown for Delivery, Intraday, Futures, and Options.',
     assumptions: [
@@ -1012,6 +1088,8 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     category: 'trading',
     categoryLabel: 'Stock Trading & Brokerage',
     shortDescription: 'Calculate required margin capital and maximum buying power exposure under SEBI Peak Margin Norms.',
+    isPopular: false,
+    isPublicDirectory: false,
     formula: 'Margin Required = Total Order Value / Leverage Multiplier',
     formulaExplanation: 'Under SEBI rules, maximum intraday equity leverage is capped at 5x (20% upfront margin).',
     assumptions: [
@@ -1038,6 +1116,8 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     category: 'trading',
     categoryLabel: 'Stock Trading & Brokerage',
     shortDescription: 'Calculate funding costs, daily interest, and holding break-even return for Margin Trading Facility.',
+    isPopular: false,
+    isPublicDirectory: false,
     formula: 'Funded = Value - Margin | Daily Interest = (Funded × Annual Rate) / 365',
     formulaExplanation: 'Computes daily and total interest cost charged by brokers for leverage delivery holding.',
     assumptions: [
@@ -1063,9 +1143,14 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
 /**
  * Fast search index and filter utility for calculators
  */
-export function searchCalculators(query: string, category: CalculatorCategory = 'all'): CalculatorMeta[] {
+export function searchCalculators(
+  query: string,
+  category: CalculatorCategory = 'all',
+  includeHidden: boolean = false
+): CalculatorMeta[] {
   const q = query.trim().toLowerCase();
   return CALCULATOR_CATALOG.filter((item) => {
+    if (!includeHidden && item.isPublicDirectory === false) return false;
     const matchesCategory = category === 'all' || item.category === category;
     if (!matchesCategory) return false;
     if (!q) return true;

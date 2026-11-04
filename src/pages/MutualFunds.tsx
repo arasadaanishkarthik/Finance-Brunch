@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, TrendingUp, ShieldCheck, Sparkles, PieChart, 
-  CheckCircle2, ChevronRight, Shield, ExternalLink, ChevronDown
+  CheckCircle2, ChevronRight, Shield, ExternalLink, ChevronDown,
+  Repeat, Coins, ArrowDownRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -41,6 +42,7 @@ const fundCategories = [
 ];
 
 const MutualFunds = () => {
+  const navigate = useNavigate();
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -355,6 +357,121 @@ const MutualFunds = () => {
             <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
               Forecast how your systematic investments (SIP), step-up allocations, lumpsum deposits, or SWP withdrawals grow over time.
             </p>
+          </div>
+
+          {/* Quick-Access 4-Calculator Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+            {/* 1. SIP Calculator */}
+            <Card className="overflow-hidden border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group rounded-2xl">
+              <div>
+                <div className="h-1.5 bg-gradient-to-r from-blue-500 to-indigo-600" />
+                <CardContent className="p-5 sm:p-6 space-y-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-cyan-400 flex items-center justify-center">
+                    <Repeat className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-cyan-400 transition-colors">
+                      SIP Calculator
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
+                      Calculate the future value of your regular monthly investments with power of compounding.
+                    </p>
+                  </div>
+                </CardContent>
+              </div>
+              <div className="p-5 sm:p-6 pt-0">
+                <Button
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold shadow-sm transition-all"
+                  onClick={() => navigate('/calculator?calc=sip')}
+                >
+                  Calculate SIP <ChevronRight className="ml-1 h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </div>
+            </Card>
+
+            {/* 2. Step-Up SIP Calculator */}
+            <Card className="overflow-hidden border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group rounded-2xl">
+              <div>
+                <div className="h-1.5 bg-gradient-to-r from-indigo-500 to-purple-600" />
+                <CardContent className="p-5 sm:p-6 space-y-3">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-purple-400 flex items-center justify-center">
+                    <TrendingUp className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-purple-400 transition-colors">
+                      Step-Up SIP Calculator
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
+                      Estimate how increasing your monthly SIP contribution annually can help grow your long-term investment corpus.
+                    </p>
+                  </div>
+                </CardContent>
+              </div>
+              <div className="p-5 sm:p-6 pt-0">
+                <Button
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-semibold shadow-sm transition-all"
+                  onClick={() => navigate('/calculator?calc=step-up-sip')}
+                >
+                  Calculate Step-Up SIP <ChevronRight className="ml-1 h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </div>
+            </Card>
+
+            {/* 3. Lumpsum Calculator */}
+            <Card className="overflow-hidden border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group rounded-2xl">
+              <div>
+                <div className="h-1.5 bg-gradient-to-r from-emerald-500 to-teal-600" />
+                <CardContent className="p-5 sm:p-6 space-y-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                    <Coins className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                      Lumpsum Calculator
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
+                      Calculate returns on one-time mutual fund investments over your preferred investment horizon.
+                    </p>
+                  </div>
+                </CardContent>
+              </div>
+              <div className="p-5 sm:p-6 pt-0">
+                <Button
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold shadow-sm transition-all"
+                  onClick={() => navigate('/calculator?calc=lumpsum')}
+                >
+                  Calculate Lumpsum <ChevronRight className="ml-1 h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </div>
+            </Card>
+
+            {/* 4. SWP Calculator */}
+            <Card className="overflow-hidden border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group rounded-2xl">
+              <div>
+                <div className="h-1.5 bg-gradient-to-r from-amber-500 to-orange-600" />
+                <CardContent className="p-5 sm:p-6 space-y-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                    <ArrowDownRight className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                      SWP Calculator
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
+                      Plan your systematic withdrawals to generate steady regular cash flow from your mutual fund corpus.
+                    </p>
+                  </div>
+                </CardContent>
+              </div>
+              <div className="p-5 sm:p-6 pt-0">
+                <Button
+                  className="w-full bg-amber-600 hover:bg-amber-700 text-white text-xs sm:text-sm font-semibold shadow-sm transition-all"
+                  onClick={() => navigate('/calculator?calc=swp')}
+                >
+                  Calculate SWP <ChevronRight className="ml-1 h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </div>
+            </Card>
           </div>
 
           <MutualFundCalculator />

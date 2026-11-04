@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { CalculatorMeta } from '@/utils/calculators/calculatorCatalog';
+import React, { useState, useMemo, useEffect } from 'react';
+import { CalculatorMeta, CalculatorFieldConfig } from '@/utils/calculators/calculatorCatalog';
 import { runCalculator } from '@/utils/calculators/runCalculator';
 import { formatINR } from '@/utils/sipCalculator';
 import { Slider } from '@/components/ui/slider';
@@ -39,7 +39,22 @@ export const UniversalCalculatorView: React.FC<UniversalCalculatorViewProps> = (
   calculator,
   onBackToDirectory,
 }) => {
-  // Initialize input state with default values
+  // rawInputs holds the displayed string value for each field (can be "" for empty or optional)
+  const [rawInputs, setRawInputs] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {};
+    calculator.fields.forEach((f) => {
+      if (f.isOptional && f.defaultValue === 0) {
+        initial[f.id] = '';
+      } else {
+        initial[f.id] = f.isCurrency
+          ? f.defaultValue.toLocaleString('en-IN')
+          : String(f.defaultValue);
+      }
+    });
+    return initial;
+  });
+
+  // inputs holds numeric values passed to calculation engine
   const [inputs, setInputs] = useState<Record<string, number>>(() => {
     const initial: Record<string, number> = {};
     calculator.fields.forEach((f) => {
@@ -48,13 +63,155 @@ export const UniversalCalculatorView: React.FC<UniversalCalculatorViewProps> = (
     return initial;
   });
 
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [showFullSchedule, setShowFullSchedule] = useState(false);
 
-  const handleInputChange = (fieldId: string, value: number) => {
+  // Sync state whenever active calculator changes
+  useEffect(() => {
+    const initialRaw: Record<string, string> = {};
+    const initialNum: Record<string, number> = {};
+    calculator.fields.forEach((f) => {
+      if (f.isOptional && f.defaultValue === 0) {
+        initialRaw[f.id] = '';
+        initialNum[f.id] = 0;
+      } else {
+        initialRaw[f.id] = f.isCurrency
+          ? f.defaultValue.toLocaleString('en-IN')
+          : String(f.defaultValue);
+        initialNum[f.id] = f.defaultValue;
+      }
+    });
+    setRawInputs(initialRaw);
+    setInputs(initialNum);
+    setValidationErrors({});
+    setShowFullSchedule(false);
+  }, [calculator.id]);
+
+  const handleTextChange = (field: CalculatorFieldConfig, rawValue: string) => {
+    // If user cleared the input completely
+    if (rawValue.trim() === '') {
+      setRawInputs((prev) => ({ ...prev, [field.id]: '' }));
+      setInputs((prev) => ({ ...prev, [field.id]: 0 }));
+      if (!field.isOptional) {
+        setValidationErrors((prev) => ({
+          ...prev,
+          [field.id]: `${field.label} is required`,
+        }));
+      } else {
+        setValidationErrors((prev) => {
+          const next = { ...prev };
+          delete next[field.id];
+          return next;
+        });
+      }
+      return;
+    }
+
+    // Keep raw string in text box
+    setRawInputs((prev) => ({ ...prev, [field.id]: rawValue }));
+
+    const cleanVal = rawValue.replace(/,/g, '').trim();
+    if (cleanVal === '-' || cleanVal === '.' || cleanVal === '-.') {
+      return;
+    }
+
+    const num = parseFloat(cleanVal);
+    if (isNaN(num)) {
+      setValidationErrors((prev) => ({
+        ...prev,
+        [field.id]: 'Please enter a valid number',
+      }));
+      return;
+    }
+
+    // Range validation
+    if (num < field.min && !field.isOptional) {
+      setValidationErrors((prev) => ({
+        ...prev,
+        [field.id]: `Minimum is ${field.isCurrency ? formatINR(field.min) : `${field.min} ${field.unit}`}`,
+      }));
+    } else if (num > field.max) {
+      setValidationErrors((prev) => ({
+        ...prev,
+        [field.id]: `Maximum is ${field.isCurrency ? formatINR(field.max) : `${field.max} ${field.unit}`}`,
+      }));
+    } else {
+      setValidationErrors((prev) => {
+        const next = { ...prev };
+        delete next[field.id];
+        return next;
+      });
+    }
+
     setInputs((prev) => ({
       ...prev,
-      [fieldId]: value,
+      [field.id]: num,
     }));
+  };
+
+  const handleBlur = (field: CalculatorFieldConfig) => {
+    const raw = rawInputs[field.id] ?? '';
+    if (raw.trim() === '') {
+      if (field.isOptional) {
+        // Keep completely blank!
+        setRawInputs((prev) => ({ ...prev, [field.id]: '' }));
+        setInputs((prev) => ({ ...prev, [field.id]: 0 }));
+        setValidationErrors((prev) => {
+          const next = { ...prev };
+          delete next[field.id];
+          return next;
+        });
+      } else {
+        setValidationErrors((prev) => ({
+          ...prev,
+          [field.id]: `${field.label} is required`,
+        }));
+      }
+      return;
+    }
+
+    const cleanVal = raw.replace(/,/g, '').trim();
+    const num = parseFloat(cleanVal);
+    if (isNaN(num)) {
+      if (field.isOptional) {
+        setRawInputs((prev) => ({ ...prev, [field.id]: '' }));
+        setInputs((prev) => ({ ...prev, [field.id]: 0 }));
+      } else {
+        const fallback = field.defaultValue;
+        setRawInputs((prev) => ({
+          ...prev,
+          [field.id]: field.isCurrency ? fallback.toLocaleString('en-IN') : String(fallback),
+        }));
+        setInputs((prev) => ({ ...prev, [field.id]: fallback }));
+      }
+      return;
+    }
+
+    // Clamp within min and max
+    const clamped = Math.max(field.min, Math.min(field.max, num));
+    setInputs((prev) => ({ ...prev, [field.id]: clamped }));
+    setRawInputs((prev) => ({
+      ...prev,
+      [field.id]: field.isCurrency ? clamped.toLocaleString('en-IN') : String(clamped),
+    }));
+    setValidationErrors((prev) => {
+      const next = { ...prev };
+      delete next[field.id];
+      return next;
+    });
+  };
+
+  const handleSliderChange = (field: CalculatorFieldConfig, value: number) => {
+    setInputs((prev) => ({ ...prev, [field.id]: value }));
+    setRawInputs((prev) => ({
+      ...prev,
+      [field.id]: field.isCurrency ? value.toLocaleString('en-IN') : String(value),
+    }));
+    setValidationErrors((prev) => {
+      const next = { ...prev };
+      delete next[field.id];
+      return next;
+    });
   };
 
   // Run calculation reactively
@@ -79,7 +236,7 @@ export const UniversalCalculatorView: React.FC<UniversalCalculatorViewProps> = (
           className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 dark:text-cyan-400 hover:text-blue-800 dark:hover:text-cyan-300 transition-colors w-fit cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to All 38 Calculators</span>
+          <span>Back to All Calculators</span>
         </button>
 
         <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 w-fit">
@@ -103,42 +260,54 @@ export const UniversalCalculatorView: React.FC<UniversalCalculatorViewProps> = (
           {/* Form Fields */}
           <div className="space-y-6 pt-2">
             {calculator.fields.map((field) => {
-              const currentValue = inputs[field.id] ?? field.defaultValue;
+              const rawVal = rawInputs[field.id] ?? '';
+              const currentNumVal = inputs[field.id];
+              const isBlank = rawVal.trim() === '';
+              const sliderPos = isBlank && field.isOptional
+                ? field.min
+                : Math.min(field.max, Math.max(field.min, currentNumVal ?? field.min));
+              const hasError = !!validationErrors[field.id];
 
               return (
                 <div key={field.id} className="space-y-3">
                   <div className="flex items-center justify-between gap-4">
-                    <label
-                      htmlFor={`input-${field.id}`}
-                      className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200"
-                    >
-                      {field.label}
-                    </label>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <label
+                        htmlFor={`input-${field.id}`}
+                        className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200"
+                      >
+                        {field.label}
+                      </label>
+                      {field.isOptional && (
+                        <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded-md">
+                          Optional
+                        </span>
+                      )}
+                    </div>
 
                     {/* Numeric Input Box */}
                     <div className="relative w-36 sm:w-44 shrink-0">
                       {field.isCurrency && (
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 dark:text-slate-500">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 dark:text-slate-500 pointer-events-none select-none">
                           ₹
                         </span>
                       )}
                       <input
                         id={`input-${field.id}`}
-                        type="number"
-                        min={field.min}
-                        max={field.max}
-                        step={field.step}
-                        value={currentValue}
-                        onChange={(e) => {
-                          const val = parseFloat(e.target.value);
-                          handleInputChange(field.id, isNaN(val) ? 0 : val);
-                        }}
-                        className={`w-full py-1.5 pr-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/80 font-mono text-sm font-bold text-right text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-cyan-400 ${
-                          field.isCurrency ? 'pl-7' : 'pl-3'
-                        }`}
+                        type="text"
+                        inputMode="decimal"
+                        value={rawVal}
+                        placeholder={field.isOptional ? 'Optional' : '0'}
+                        onChange={(e) => handleTextChange(field, e.target.value)}
+                        onBlur={() => handleBlur(field)}
+                        className={`w-full py-1.5 ${field.isCurrency ? 'pl-7' : 'pl-3'} ${!field.isCurrency ? 'pr-8' : 'pr-3'} rounded-xl border ${
+                          hasError
+                            ? 'border-red-400 dark:border-red-500 focus:ring-red-400'
+                            : 'border-slate-200 dark:border-slate-700 focus:ring-blue-500 dark:focus:ring-cyan-400'
+                        } bg-slate-50/70 dark:bg-slate-800/80 font-mono text-sm font-bold text-right text-slate-900 dark:text-white focus:outline-none focus:ring-2 transition-all`}
                       />
                       {!field.isCurrency && (
-                        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-slate-400 dark:text-slate-500">
+                        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-slate-400 dark:text-slate-500 pointer-events-none select-none">
                           {field.unit}
                         </span>
                       )}
@@ -147,11 +316,11 @@ export const UniversalCalculatorView: React.FC<UniversalCalculatorViewProps> = (
 
                   {/* Slider Control */}
                   <Slider
-                    value={[currentValue]}
+                    value={[sliderPos]}
                     min={field.min}
                     max={field.max}
                     step={field.step}
-                    onValueChange={(val) => handleInputChange(field.id, val[0])}
+                    onValueChange={(val) => handleSliderChange(field, val[0])}
                     className="cursor-pointer py-1"
                   />
 
@@ -164,6 +333,14 @@ export const UniversalCalculatorView: React.FC<UniversalCalculatorViewProps> = (
                       {field.isCurrency ? formatINR(field.max) : `${field.max.toLocaleString('en-IN')} ${field.unit}`}
                     </span>
                   </div>
+
+                  {/* Validation Error Message */}
+                  {hasError && (
+                    <p className="text-xs text-red-500 dark:text-red-400 flex items-center gap-1.5 pt-0.5">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>{validationErrors[field.id]}</span>
+                    </p>
+                  )}
                 </div>
               );
             })}

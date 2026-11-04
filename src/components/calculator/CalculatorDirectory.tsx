@@ -29,6 +29,7 @@ const CATEGORY_ICONS: Record<CalculatorCategory, React.ReactNode> = {
   all: <CalcIcon className="w-4 h-4" />,
   investments: <TrendingUp className="w-4 h-4 text-blue-500" />,
   government: <Landmark className="w-4 h-4 text-emerald-500" />,
+  'loans-tax-salary': <CircleDollarSign className="w-4 h-4 text-purple-500" />,
   loans: <CircleDollarSign className="w-4 h-4 text-amber-500" />,
   tax: <Receipt className="w-4 h-4 text-purple-500" />,
   trading: <CandlestickChart className="w-4 h-4 text-cyan-500" />,
@@ -46,7 +47,7 @@ export const CalculatorDirectory: React.FC<CalculatorDirectoryProps> = ({
   }, [searchQuery, activeCategory]);
 
   const popularCalculators = useMemo(() => {
-    return CALCULATOR_CATALOG.filter((c) => c.isPopular);
+    return CALCULATOR_CATALOG.filter((c) => c.isPopular && c.isPublicDirectory);
   }, []);
 
   return (
@@ -57,13 +58,13 @@ export const CalculatorDirectory: React.FC<CalculatorDirectoryProps> = ({
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-cyan-400 mb-2">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Comprehensive 38-Calculator Suite</span>
+              <span>Comprehensive 26-Calculator Suite</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               Explore All Financial Calculators
             </h2>
             <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 max-w-2xl">
-              Search or browse verified financial tools across Mutual Funds, Government Schemes, Loans, Taxation, and Stock Trading.
+              Search or browse verified financial tools across Mutual Funds, Government Schemes, Loans, Tax, and Salary.
             </p>
           </div>
 
@@ -158,7 +159,7 @@ export const CalculatorDirectory: React.FC<CalculatorDirectoryProps> = ({
             <Search className="w-10 h-10 text-slate-400 mx-auto" />
             <h4 className="text-lg font-bold text-slate-800 dark:text-slate-200">No calculators found</h4>
             <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
-              We couldn't find any calculator matching "{searchQuery}". Try searching for SIP, EMI, PPF, GST, or Tax.
+              We couldn't find any calculator matching "{searchQuery}". Try searching for SIP, PPF, SSY, or Salary.
             </p>
             <Button variant="outline" size="sm" onClick={() => { setSearchQuery(''); setActiveCategory('all'); }}>
               Reset Filters

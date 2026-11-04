@@ -25,6 +25,157 @@ import { calculateSWP, SWPCalculationResult } from '../swpCalculator';
 export { calculateSIP, calculateStepUpSIP, calculateLumpsum, calculateSWP };
 export type { SIPCalculationResult, StepUpSIPCalculationResult, LumpsumCalculationResult, SWPCalculationResult };
 
+// --- Step-Up SWP (Systematic Withdrawal Plan with Annual Step-Up) ---
+export interface StepUpSWPInputs {
+  initialCorpus: number;
+  initialMonthlyWithdrawal: number;
+  annualStepUpPercentage: number;
+  expectedAnnualReturn: number;
+  withdrawalDurationYears: number;
+}
+
+export interface StepUpSWPYearlyScheduleItem {
+  year: number;
+  openingBalance: number;
+  growthEarned: number;
+  annualWithdrawal: number;
+  closingBalance: number;
+  monthlyWithdrawal: number;
+  cumulativeWithdrawals: number;
+}
+
+export interface StepUpSWPResult {
+  initialCorpus: number;
+  initialMonthlyWithdrawal: number;
+  annualStepUpPercentage: number;
+  expectedAnnualReturn: number;
+  withdrawalDurationYears: number;
+  totalActualWithdrawals: number;
+  remainingCorpus: number;
+  totalGrowthEarned: number;
+  isExhausted: boolean;
+  exhaustionMonthNumber: number | null;
+  exhaustionYear: number | null;
+  yearlySchedule: StepUpSWPYearlyScheduleItem[];
+  isValid: boolean;
+  validationError?: string;
+}
+
+export function calculateStepUpSWP(inputs: StepUpSWPInputs): StepUpSWPResult {
+  const {
+    initialCorpus,
+    initialMonthlyWithdrawal,
+    annualStepUpPercentage,
+    expectedAnnualReturn,
+    withdrawalDurationYears,
+  } = inputs;
+
+  if (
+    typeof initialCorpus !== 'number' ||
+    isNaN(initialCorpus) ||
+    initialCorpus <= 0 ||
+    typeof initialMonthlyWithdrawal !== 'number' ||
+    isNaN(initialMonthlyWithdrawal) ||
+    initialMonthlyWithdrawal <= 0 ||
+    typeof withdrawalDurationYears !== 'number' ||
+    isNaN(withdrawalDurationYears) ||
+    withdrawalDurationYears <= 0
+  ) {
+    return {
+      initialCorpus: Math.max(0, Number(initialCorpus) || 0),
+      initialMonthlyWithdrawal: Math.max(0, Number(initialMonthlyWithdrawal) || 0),
+      annualStepUpPercentage: Math.max(0, Number(annualStepUpPercentage) || 0),
+      expectedAnnualReturn: Math.max(0, Number(expectedAnnualReturn) || 0),
+      withdrawalDurationYears: Math.max(0, Number(withdrawalDurationYears) || 0),
+      totalActualWithdrawals: 0,
+      remainingCorpus: Math.max(0, Number(initialCorpus) || 0),
+      totalGrowthEarned: 0,
+      isExhausted: false,
+      exhaustionMonthNumber: null,
+      exhaustionYear: null,
+      yearlySchedule: [],
+      isValid: false,
+      validationError: 'Please provide valid positive numbers for corpus, withdrawal, and duration.',
+    };
+  }
+
+  const monthlyRate = (Math.max(0, expectedAnnualReturn) / 100) / 12;
+  let currentBalance = initialCorpus;
+  let totalActualWithdrawals = 0;
+  let totalGrowthEarned = 0;
+  let isExhausted = false;
+  let exhaustionMonthNumber: number | null = null;
+  let exhaustionYear: number | null = null;
+  const yearlySchedule: StepUpSWPYearlyScheduleItem[] = [];
+
+  for (let y = 1; y <= withdrawalDurationYears; y++) {
+    const openingBalance = currentBalance;
+    const currentMonthlyWithdrawal = initialMonthlyWithdrawal * Math.pow(1 + Math.max(0, annualStepUpPercentage) / 100, y - 1);
+    let yearGrowth = 0;
+    let yearWithdrawals = 0;
+
+    for (let m = 1; m <= 12; m++) {
+      const monthIdx = (y - 1) * 12 + m;
+      if (currentBalance <= 0) {
+        if (!isExhausted) {
+          isExhausted = true;
+          exhaustionMonthNumber = monthIdx;
+          exhaustionYear = y;
+        }
+        break;
+      }
+
+      // Monthly interest compounding
+      const monthGrowth = currentBalance * monthlyRate;
+      currentBalance += monthGrowth;
+      yearGrowth += monthGrowth;
+      totalGrowthEarned += monthGrowth;
+
+      // Deduct monthly withdrawal
+      const actualWithdrawal = Math.min(currentBalance, currentMonthlyWithdrawal);
+      currentBalance -= actualWithdrawal;
+      yearWithdrawals += actualWithdrawal;
+      totalActualWithdrawals += actualWithdrawal;
+
+      if (currentBalance <= 0.001) {
+        currentBalance = 0;
+        if (!isExhausted) {
+          isExhausted = true;
+          exhaustionMonthNumber = monthIdx;
+          exhaustionYear = y;
+        }
+      }
+    }
+
+    yearlySchedule.push({
+      year: y,
+      openingBalance: Math.round(openingBalance),
+      growthEarned: Math.round(yearGrowth),
+      annualWithdrawal: Math.round(yearWithdrawals),
+      closingBalance: Math.round(currentBalance),
+      monthlyWithdrawal: Math.round(currentMonthlyWithdrawal),
+      cumulativeWithdrawals: Math.round(totalActualWithdrawals),
+    });
+  }
+
+  return {
+    initialCorpus,
+    initialMonthlyWithdrawal,
+    annualStepUpPercentage,
+    expectedAnnualReturn,
+    withdrawalDurationYears,
+    totalActualWithdrawals: Math.round(totalActualWithdrawals),
+    remainingCorpus: Math.round(currentBalance),
+    totalGrowthEarned: Math.round(totalGrowthEarned),
+    isExhausted,
+    exhaustionMonthNumber,
+    exhaustionYear,
+    yearlySchedule,
+    isValid: true,
+  };
+}
+
+
 // --- 5. Mutual Fund Returns Calculator ---
 export interface MFReturnsInputs {
   investmentType: 'sip' | 'lumpsum';

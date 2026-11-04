@@ -101,7 +101,7 @@ const Calculator = () => {
               className="w-fit text-xs sm:text-sm font-semibold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               <Grid className="w-4 h-4 mr-1.5" />
-              <span>Browse All 38 Calculators</span>
+              <span>Browse All 26 Calculators</span>
             </Button>
           )}
         </div>
@@ -130,7 +130,7 @@ const Calculator = () => {
               <MutualFundCalculator />
             </div>
 
-            {/* Complete 38-Calculator Directory with Search & Filters */}
+            {/* Complete 26-Calculator Directory with Search & Filters */}
             <div className="pt-6 border-t border-slate-200 dark:border-slate-800">
               <CalculatorDirectory
                 onSelectCalculator={handleSelectCalculator}
