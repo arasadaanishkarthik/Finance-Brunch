@@ -146,39 +146,7 @@ function createCalculatorSvgUrl(id: string, name: string, category: string): str
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
-const CALCULATOR_IMAGES: Record<string, string> = {
-  // 1. Mutual Funds & Investments
-  sip: '/lovable-uploads/bf6dd0ac-44d2-4676-a31c-07952b0c5108.png',
-  lumpsum: '/images/service-investment-planning.jpg',
-  swp: '/lovable-uploads/39526ab9-be38-46a7-9a10-857828b19686.png',
-  'step-up-sip': '/lovable-uploads/57727f9c-2aca-4226-99e9-efa57dc9848f.png',
-  'step-up-swp': '/images/service-wealth-management.jpg',
-  roi: '/lovable-uploads/06b665ec-50f4-4f68-b7fe-836df10af649.png',
-  cagr: '/lovable-uploads/4d13bcab-a123-47b9-bf2e-cd9cc4554217.png',
-  xirr: '/lovable-uploads/40e77375-0204-4438-a625-becd00b5c616.png',
-  'stock-average': '/lovable-uploads/b7af595c-860c-4bed-8735-64391a005af9.png',
-  inflation: '/lovable-uploads/3a5fcbd0-7610-456b-b056-3607bd6b15e2.png',
-  fire: '/lovable-uploads/26c5a7e3-fcfa-4500-ae98-4f465f3ac8b1.png',
-  retirement: '/images/financial-planning-advisory.jpg',
-
-  // 2. Government Savings & Investment Schemes
-  ssy: '/images/service-insurance.jpg',
-  ppf: '/lovable-uploads/b10e7df8-0120-4065-9082-e64035550408.png',
-  epf: '/images/about-financial-advisory.jpg',
-  fd: '/lovable-uploads/b10e7df8-0120-4065-9082-e64035550408.png',
-  rd: '/lovable-uploads/a16c9dc0-8a9d-45c9-9911-078f2cae3c73.png',
-  nsc: '/images/service-insurance.jpg',
-  apy: '/lovable-uploads/75e0d2e9-6d50-49f9-abe9-5236913686da.png',
-  'po-mis': '/lovable-uploads/b10e7df8-0120-4065-9082-e64035550408.png',
-  scss: '/images/about-executive.jpg',
-  nps: '/lovable-uploads/26c5a7e3-fcfa-4500-ae98-4f465f3ac8b1.png',
-
-  // 3. Loans, Tax and Salary
-  'home-loan-emi': '/images/service-investment-planning.jpg',
-  'car-loan-emi': '/lovable-uploads/0b1e6d57-0924-4e27-b8f1-e5e72dc5b643.png',
-  hra: '/lovable-uploads/b80d81b8-1bd9-42ad-9457-5b8f46a67af0.png',
-  salary: '/lovable-uploads/b80d81b8-1bd9-42ad-9457-5b8f46a67af0.png',
-};
+export const CALCULATOR_CARD_BG = '/images/calculator-card-bg.jpg';
 
 const SHORT_TITLES: Record<string, string> = {
   sip: 'SIP CALCULATOR',
@@ -214,7 +182,7 @@ export function getCalculatorCardData(calc: CalculatorMeta, index: number): Calc
   const shortTitle = SHORT_TITLES[calc.id] || calc.name.toUpperCase();
   const tags = CALCULATOR_TAGS[calc.id] ?? [calc.categoryLabel, 'Verified Algorithm', 'Official Formula'];
   const categoryTheme = THEME_PALETTES[calc.category] ?? THEME_PALETTES.default;
-  const imageUrl = CALCULATOR_IMAGES[calc.id] || createCalculatorSvgUrl(calc.id, calc.name, calc.category);
+  const imageUrl = CALCULATOR_CARD_BG;
   const formulaBadge = calc.formula.split('=')[0]?.trim() || 'Calculation';
 
   return {

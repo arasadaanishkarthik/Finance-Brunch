@@ -498,7 +498,7 @@ export const CalculatorArcGallery: React.FC<CalculatorArcGalleryProps> = ({
                   </div>
 
                   {/* Bottom Title Card Strip */}
-                  <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black via-black/85 to-transparent z-10 space-y-1">
+                  <div className="absolute bottom-0 left-0 right-0 p-5 pt-10 bg-gradient-to-t from-black via-black/90 to-transparent z-10 space-y-1">
                     <h3 className="text-base font-bold text-white tracking-tight line-clamp-1">
                       {calc.name}
                     </h3>
