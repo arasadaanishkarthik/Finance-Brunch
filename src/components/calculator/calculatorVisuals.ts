@@ -1,0 +1,163 @@
+/**
+ * Finance Brunch — Calculator Visuals & Card Data Provider
+ * 
+ * Provides crisp visual previews, categorized tag pills, and metadata
+ * for the Collapsed Grid Cards and Expanded Arc Gallery.
+ */
+
+import { CalculatorMeta } from '@/utils/calculators/calculatorCatalog';
+
+export interface CalculatorCardData {
+  numberStr: string;
+  tags: string[];
+  imageUrl: string;
+  formulaBadge: string;
+  categoryTheme: {
+    accent: string;
+    glow: string;
+    badgeBg: string;
+    border: string;
+  };
+}
+
+const THEME_PALETTES: Record<string, CalculatorCardData['categoryTheme']> = {
+  investments: {
+    accent: '#38bdf8', // sky-400
+    glow: 'rgba(56, 189, 248, 0.25)',
+    badgeBg: 'rgba(14, 165, 233, 0.12)',
+    border: 'rgba(56, 189, 248, 0.35)',
+  },
+  government: {
+    accent: '#34d399', // emerald-400
+    glow: 'rgba(52, 211, 153, 0.25)',
+    badgeBg: 'rgba(16, 185, 129, 0.12)',
+    border: 'rgba(52, 211, 153, 0.35)',
+  },
+  'loans-tax-salary': {
+    accent: '#a78bfa', // purple-400
+    glow: 'rgba(167, 139, 250, 0.25)',
+    badgeBg: 'rgba(139, 92, 246, 0.12)',
+    border: 'rgba(167, 139, 250, 0.35)',
+  },
+  default: {
+    accent: '#c6ff3d', // lime-green
+    glow: 'rgba(198, 255, 61, 0.25)',
+    badgeBg: 'rgba(198, 255, 61, 0.12)',
+    border: 'rgba(198, 255, 61, 0.35)',
+  },
+};
+
+const CALCULATOR_TAGS: Record<string, string[]> = {
+  sip: ['Mutual Funds', 'Annuity Due', 'Monthly SIP'],
+  lumpsum: ['Mutual Funds', 'Compound Growth', 'One-Time Deposit'],
+  swp: ['Mutual Funds', 'Periodic Cash Flow', 'Systematic Withdrawal'],
+  'step-up-sip': ['Mutual Funds', 'Annual Step-Up', 'Accelerated Corpus'],
+  'step-up-swp': ['Mutual Funds', 'Inflation-Adjusted', 'Capital Preservation'],
+  roi: ['Investment', 'Absolute Return', 'Annualized Yield'],
+  cagr: ['Performance', 'Geometric Mean', 'Multi-Year Horizons'],
+  xirr: ['Portfolio', 'Newton-Raphson', 'Irregular Cash Flows'],
+  'stock-average': ['Equity Trading', 'Weighted Average', 'Rupee-Cost Averaging'],
+  inflation: ['Purchasing Power', 'CPI Erosion', 'Future Value Target'],
+  fire: ['Financial Freedom', '25x Rule', 'Safe Withdrawal Rate'],
+  retirement: ['Retirement Corpus', 'Growing Annuity', 'Lifelong Pension'],
+  ssy: ['Govt. Scheme', '8.2% Guaranteed', 'Girl Child Future'],
+  ppf: ['Govt. Scheme', '7.1% Sovereign', 'Section 80C EEE'],
+  epf: ['EPFO Statutory', '8.25% Annual Yield', 'Employer + Employee'],
+  fd: ['Fixed Income', 'Quarterly Comp.', 'Capital Protection'],
+  rd: ['Fixed Income', 'Monthly Deposit', 'Disciplined Savings'],
+  nsc: ['Post Office', '7.7% Guaranteed', '5-Year Sovereign'],
+  apy: ['PFRDA Scheme', 'Guaranteed Pension', 'Social Security'],
+  'po-mis': ['Post Office', '7.4% Monthly', 'Guaranteed Income'],
+  scss: ['Senior Citizens', '8.2% Quarterly', 'Retirement Cash Flow'],
+  nps: ['Pension System', 'Tier-1 Corpus', '60:40 Annuity Split'],
+  'home-loan-emi': ['Loan Planning', 'Reducing Balance', 'Amortization'],
+  'car-loan-emi': ['Auto Finance', 'Down Payment', 'Total Interest Cost'],
+  hra: ['Income Tax', 'Section 10(13A)', 'Metro vs Non-Metro'],
+  salary: ['Employment CTC', 'In-Hand Take Home', 'PF & Tax Deductions'],
+};
+
+/**
+ * Generates an SVG data URL with modern financial chart and geometry styling
+ */
+function createCalculatorSvgUrl(id: string, name: string, category: string): string {
+  const isInvest = category === 'investments';
+  const isGovt = category === 'government';
+  const isLoan = category === 'loans-tax-salary';
+
+  const col1 = isInvest ? '#0369a1' : isGovt ? '#047857' : isLoan ? '#6d28d9' : '#0f766e';
+  const col2 = isInvest ? '#38bdf8' : isGovt ? '#34d399' : isLoan ? '#c084fc' : '#2dd4bf';
+  const accent = isInvest ? '#67e8f9' : isGovt ? '#a7f3d0' : isLoan ? '#e9d5ff' : '#c6ff3d';
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" width="640" height="400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0f1d" />
+      <stop offset="50%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#070c18" />
+    </linearGradient>
+    <linearGradient id="curve" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="${col1}" />
+      <stop offset="50%" stop-color="${col2}" />
+      <stop offset="100%" stop-color="${accent}" />
+    </linearGradient>
+    <linearGradient id="area" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="${col2}" stop-opacity="0.32" />
+      <stop offset="100%" stop-color="${col1}" stop-opacity="0.0" />
+    </linearGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1" />
+    </pattern>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background and grid -->
+  <rect width="640" height="400" fill="url(#bg)" />
+  <rect width="640" height="400" fill="url(#grid)" />
+
+  <!-- Ambient glowing spheres -->
+  <circle cx="520" cy="80" r="160" fill="${col2}" opacity="0.12" filter="blur(40px)" />
+  <circle cx="100" cy="320" r="140" fill="${col1}" opacity="0.10" filter="blur(40px)" />
+
+  <!-- Chart Area fill -->
+  <path d="M 60 320 Q 200 300, 320 220 T 580 90 L 580 320 Z" fill="url(#area)" />
+
+  <!-- Dynamic Financial Curve -->
+  <path d="M 60 320 Q 200 300, 320 220 T 580 90" fill="none" stroke="url(#curve)" stroke-width="4.5" filter="url(#glow)" stroke-linecap="round" />
+
+  <!-- Data Nodes -->
+  <circle cx="200" cy="285" r="5" fill="#ffffff" stroke="${col2}" stroke-width="3" />
+  <circle cx="320" cy="220" r="6" fill="#ffffff" stroke="${col2}" stroke-width="3.5" />
+  <circle cx="450" cy="145" r="5" fill="#ffffff" stroke="${accent}" stroke-width="3" />
+  <circle cx="580" cy="90" r="7.5" fill="#ffffff" stroke="${accent}" stroke-width="4" filter="url(#glow)" />
+
+  <!-- Badge Capsule -->
+  <rect x="60" y="44" width="160" height="30" rx="15" fill="rgba(255,255,255,0.06)" stroke="${col2}" stroke-width="1.2" stroke-opacity="0.5" />
+  <circle cx="76" cy="59" r="4.5" fill="${accent}" />
+  <text x="90" y="64" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="11" font-weight="700" letter-spacing="1">FINANCE BRUNCH</text>
+
+  <!-- Watermark Symbol -->
+  <text x="560" y="356" fill="rgba(255,255,255,0.06)" font-family="system-ui, sans-serif" font-size="72" font-weight="900" text-anchor="end">FB</text>
+</svg>`;
+
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
+export function getCalculatorCardData(calc: CalculatorMeta, index: number): CalculatorCardData {
+  const numberStr = String(index + 1).padStart(2, '0');
+  const tags = CALCULATOR_TAGS[calc.id] ?? [calc.categoryLabel, 'Verified Algorithm', 'Official Formula'];
+  const categoryTheme = THEME_PALETTES[calc.category] ?? THEME_PALETTES.default;
+  const imageUrl = createCalculatorSvgUrl(calc.id, calc.name, calc.category);
+  const formulaBadge = calc.formula.split('=')[0]?.trim() || 'Calculation';
+
+  return {
+    numberStr,
+    tags,
+    imageUrl,
+    formulaBadge,
+    categoryTheme,
+  };
+}
+
