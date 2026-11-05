@@ -5,20 +5,19 @@ import { CalculatorMeta } from '@/utils/calculators/calculatorCatalog';
 import { ARC_GALLERY_CONSTANTS } from './arcGalleryConstants';
 import { getCalculatorCardData, CalculatorCardData } from './calculatorVisuals';
 import { scrollWindowTo } from '@/lib/smoothScroll';
-import { ArrowUpRight, Calculator as CalcIcon, ChevronUp, Sparkles } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
 interface CalculatorArcGalleryProps {
   calculators: CalculatorMeta[];
   onSelectCalculator: (slug: string) => void;
-  onCollapse: () => void;
+  onCollapse?: () => void;
 }
 
 export const CalculatorArcGallery: React.FC<CalculatorArcGalleryProps> = ({
   calculators,
   onSelectCalculator,
-  onCollapse,
 }) => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
@@ -55,7 +54,6 @@ export const CalculatorArcGallery: React.FC<CalculatorArcGalleryProps> = ({
     viewportHeight: typeof window !== 'undefined' ? window.innerHeight : 800,
     isMobile: false,
     arcRadius: 1200,
-    titleGap: 80,
     cardWidth: 260,
     cardHeight: 420,
     pinDistance: 3000,
@@ -75,8 +73,6 @@ export const CalculatorArcGallery: React.FC<CalculatorArcGalleryProps> = ({
       ? vw * ARC_GALLERY_CONSTANTS.ARC_RADIUS_MULTIPLIER_MOBILE
       : vw * ARC_GALLERY_CONSTANTS.ARC_RADIUS_MULTIPLIER_DESKTOP;
 
-    const titleGap = vw * ARC_GALLERY_CONSTANTS.TITLE_GAP_RATIO;
-
     const cardHeight = isMobile
       ? Math.min(vh * 0.44, vw * 0.68)
       : Math.min(vh * ARC_GALLERY_CONSTANTS.CARD_HEIGHT_RATIO, ARC_GALLERY_CONSTANTS.MAX_CARD_HEIGHT);
@@ -94,7 +90,6 @@ export const CalculatorArcGallery: React.FC<CalculatorArcGalleryProps> = ({
       viewportHeight: vh,
       isMobile,
       arcRadius,
-      titleGap,
       cardWidth,
       cardHeight,
       pinDistance,
@@ -110,10 +105,11 @@ export const CalculatorArcGallery: React.FC<CalculatorArcGalleryProps> = ({
       viewportHeight: vh,
       arcRadius,
       cardWidth,
+      isMobile,
     } = metricsRef.current;
 
     const centerX = vw / 2;
-    const titleApexY = vh * 0.22; // 22% from the top
+    const titleApexY = vh * 0.20; // Position title near upper part (20% from top)
     const cardBottomY = vh * 0.88; // Anchor cards near bottom center
 
     // Virtual continuous cursor position [0, count]
@@ -128,7 +124,7 @@ export const CalculatorArcGallery: React.FC<CalculatorArcGalleryProps> = ({
 
     setActiveIndex(nearestIndex);
 
-    // Meta row visibility (visible only when project is centered)
+    // Meta row visibility (visible only when active project is centered)
     let activeDelta = nearestIndex - continuousIndex;
     if (isLooping) {
       if (activeDelta > count / 2) activeDelta -= count;
@@ -137,8 +133,8 @@ export const CalculatorArcGallery: React.FC<CalculatorArcGalleryProps> = ({
     const metaFade = Math.max(0, 1 - Math.abs(activeDelta) / 0.28);
     setMetaOpacity(metaFade);
 
-    // Dynamic angular distance step between titles along the circular arc
-    const angularStep = (cardWidth * 0.95 + metricsRef.current.titleGap) / arcRadius;
+    // Angular distance step between titles along circular arc (generously spaced to prevent any overlap)
+    const angularStep = isMobile ? 0.65 : 0.52;
 
     // Position each title and card
     for (let i = 0; i < count; i++) {
@@ -151,7 +147,7 @@ export const CalculatorArcGallery: React.FC<CalculatorArcGalleryProps> = ({
       const absDelta = Math.abs(delta);
 
       // -----------------------------------------------------------
-      // 1. GIANT TITLE LAYER: Circular Arc Translation & Rotation
+      // 1. GIANT TITLE LAYER: Fixed separation to eliminate mixing
       // -----------------------------------------------------------
       const titleEl = titleRefs.current[i];
       if (titleEl) {
@@ -161,13 +157,13 @@ export const CalculatorArcGallery: React.FC<CalculatorArcGalleryProps> = ({
         const titleX = centerX + arcRadius * Math.sin(angleRad);
         const titleY = titleApexY + arcRadius * (1 - Math.cos(angleRad));
 
-        // Fade out as it moves beyond half a viewport
-        const distFromCenter = Math.abs(titleX - centerX);
+        // Strict opacity gate: ONLY the title near the center is visible!
+        // Prevents titles from overlapping or colliding with each other.
         let titleOpacity = 0;
-        if (distFromCenter < vw * 0.24) {
+        if (absDelta < 0.25) {
           titleOpacity = 1;
-        } else if (distFromCenter < vw * 0.52) {
-          titleOpacity = 1 - (distFromCenter - vw * 0.24) / (vw * 0.28);
+        } else if (absDelta < 0.65) {
+          titleOpacity = (0.65 - absDelta) / 0.40;
         }
 
         if (titleOpacity > 0.01) {
@@ -214,9 +210,9 @@ export const CalculatorArcGallery: React.FC<CalculatorArcGalleryProps> = ({
           cardEl.style.transform = `translate3d(${cardX}px, ${cardY}px, 0) translate(-50%, -100%) scale(${scale.toFixed(3)})`;
           cardEl.setAttribute('aria-current', absDelta < 0.4 ? 'true' : 'false');
 
-          // Dark overlay grows with distance up to 80% black so active pops
+          // Dark overlay grows with distance up to 75% black so active pops
           if (overlayEl) {
-            const overlayOpacity = Math.min(0.80, absDelta * 0.38);
+            const overlayOpacity = Math.min(0.75, absDelta * 0.38);
             overlayEl.style.opacity = overlayOpacity.toFixed(2);
           }
         } else {
@@ -301,7 +297,7 @@ export const CalculatorArcGallery: React.FC<CalculatorArcGalleryProps> = ({
   return (
     <div
       ref={sectionRef}
-      className="relative w-full bg-[#181818] text-[#f5f5f5]"
+      className="relative w-full bg-[#181818] text-[#f5f5f5] rounded-3xl overflow-hidden border border-slate-800 shadow-2xl"
       style={{
         // Extra scroll buffer created by pin distance
         minHeight: `calc(100vh + ${metricsRef.current.pinDistance}px)`,
@@ -313,48 +309,46 @@ export const CalculatorArcGallery: React.FC<CalculatorArcGalleryProps> = ({
         className="w-full h-screen overflow-hidden relative select-none bg-[#181818]"
         style={{
           backgroundColor: '#181818',
-          background: 'radial-gradient(ellipse at 50% 30%, rgba(24,24,28,0.98), rgba(11,11,13,0.95))',
+          background: 'radial-gradient(ellipse at 50% 25%, rgba(24,24,30,0.98), rgba(11,11,13,0.96))',
         }}
       >
         {/* Subtle Ambient Grain & Glow */}
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_0%,rgba(198,255,61,0.06),transparent_60%)]" />
 
-        {/* Top Controls Bar: Section Identity + Show Less Toggle */}
-        <div className="absolute top-5 left-0 right-0 z-50 px-6 sm:px-10 flex items-center justify-between pointer-events-auto">
-          <div className="flex items-center gap-2">
+        {/* Top Controls Bar: Counter and Active Scheme Badge */}
+        <div className="absolute top-6 left-0 right-0 z-50 px-6 sm:px-10 flex items-center justify-between pointer-events-none">
+          <div className="flex items-center gap-2 bg-black/50 px-3.5 py-1.5 rounded-full border border-white/10 backdrop-blur-md">
             <span className="w-2 h-2 rounded-full bg-[#c6ff3d] animate-pulse" />
             <span className="text-xs font-mono font-semibold uppercase tracking-wider text-[#c6ff3d]">
-              Arc Gallery • {activeIndex + 1} of {count}
+              Interactive Arc • {activeIndex + 1} of {count}
             </span>
           </div>
 
-          <button
-            type="button"
-            onClick={onCollapse}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono font-semibold text-slate-200 bg-white/10 hover:bg-[#c6ff3d] hover:text-black border border-white/20 hover:border-[#c6ff3d] transition-all cursor-pointer backdrop-blur-md shadow-lg"
-          >
-            <span>Show Less</span>
-            <ChevronUp className="w-3.5 h-3.5" />
-          </button>
+          {activeItem && (
+            <div className="hidden sm:flex items-center gap-2 bg-black/50 px-3.5 py-1.5 rounded-full border border-white/10 backdrop-blur-md text-xs font-mono text-slate-300">
+              <span className="text-slate-400">Category:</span>
+              <span className="text-white font-semibold">{activeItem.calc.categoryLabel}</span>
+            </div>
+          )}
         </div>
 
         {/* ------------------------------------------------------------- */}
-        {/* LAYER 1: GIANT TITLE LAYER (~22% from Top)                   */}
+        {/* LAYER 1: GIANT TITLE LAYER (~20% from Top, Non-Overlapping)  */}
         {/* ------------------------------------------------------------- */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {cardDataList.map(({ calc }, idx) => (
+          {cardDataList.map(({ calc, data }, idx) => (
             <div
               key={calc.id}
               ref={(el) => {
                 titleRefs.current[idx] = el;
               }}
-              className="absolute left-0 top-0 text-center will-change-transform"
+              className="absolute left-0 top-0 text-center will-change-transform max-w-[85vw]"
               style={{
                 display: 'none',
               }}
             >
-              <h2 className="text-[clamp(2.5rem,6.5vw,7.5rem)] font-extrabold uppercase tracking-tighter text-[#f5f5f5] leading-none drop-shadow-2xl">
-                {calc.name}
+              <h2 className="text-[clamp(1.75rem,4.2vw,4.25rem)] font-black uppercase tracking-tight text-[#f5f5f5] whitespace-nowrap leading-none drop-shadow-[0_10px_20px_rgba(0,0,0,0.85)]">
+                {data.shortTitle}
               </h2>
             </div>
           ))}
@@ -364,7 +358,7 @@ export const CalculatorArcGallery: React.FC<CalculatorArcGalleryProps> = ({
         {/* LAYER 2: META LAYER (~30% from Top, Centered)                */}
         {/* ------------------------------------------------------------- */}
         <div
-          className="absolute left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-3 transition-opacity duration-150 text-center px-4"
+          className="absolute left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-2.5 transition-opacity duration-150 text-center px-4 max-w-2xl"
           style={{
             top: '30%',
             opacity: metaOpacity,
@@ -373,14 +367,14 @@ export const CalculatorArcGallery: React.FC<CalculatorArcGalleryProps> = ({
         >
           {activeItem && (
             <>
-              {/* Project Number + Category Tag */}
+              {/* Official Complete Calculator Name & Number */}
               <div className="flex items-center gap-2 text-xs font-mono text-[#c6ff3d]">
                 <span className="px-2 py-0.5 rounded bg-[#c6ff3d]/15 border border-[#c6ff3d]/30 font-bold">
                   {activeItem.data.numberStr}
                 </span>
-                <span className="text-slate-400">•</span>
-                <span className="uppercase tracking-widest text-slate-300">
-                  {activeItem.calc.categoryLabel}
+                <span className="text-slate-500">•</span>
+                <span className="text-white font-bold text-xs sm:text-sm tracking-wide">
+                  {activeItem.calc.name}
                 </span>
               </div>
 
@@ -396,12 +390,12 @@ export const CalculatorArcGallery: React.FC<CalculatorArcGalleryProps> = ({
                 ))}
               </div>
 
-              {/* Action Buttons: Calculate Now & Formula View */}
+              {/* Action Buttons: Open Calculator & Formula Details */}
               <div className="flex items-center gap-3 pt-1">
                 <button
                   type="button"
                   onClick={() => onSelectCalculator(activeItem.calc.slug)}
-                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-[#c6ff3d] text-slate-950 hover:bg-[#d4ff66] transition-all cursor-pointer shadow-md font-mono"
+                  className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-[#c6ff3d] text-slate-950 hover:bg-[#d4ff66] transition-all cursor-pointer shadow-lg font-mono"
                 >
                   <span>Open Calculator</span>
                   <ArrowUpRight className="w-4 h-4" />
@@ -410,7 +404,7 @@ export const CalculatorArcGallery: React.FC<CalculatorArcGalleryProps> = ({
                 <button
                   type="button"
                   onClick={() => onSelectCalculator(activeItem.calc.slug)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-200 border border-slate-700 bg-white/5 hover:bg-white/10 transition-all cursor-pointer font-mono"
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-200 border border-slate-700 bg-white/5 hover:bg-white/10 transition-all cursor-pointer font-mono"
                 >
                   <span>Formula: {activeItem.data.formulaBadge}</span>
                 </button>
@@ -530,7 +524,7 @@ export const CalculatorArcGallery: React.FC<CalculatorArcGalleryProps> = ({
 
         {/* Scroll Hint at Bottom Center */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex items-center gap-2 text-[11px] font-mono text-slate-400 bg-black/40 px-3 py-1 rounded-full border border-white/10 backdrop-blur-sm">
-          <span>Scroll to rotate arc</span>
+          <span>Scroll down to rotate through calculators</span>
           <span className="w-1.5 h-1.5 rounded-full bg-[#c6ff3d] animate-ping" />
         </div>
       </div>
@@ -539,4 +533,3 @@ export const CalculatorArcGallery: React.FC<CalculatorArcGalleryProps> = ({
 };
 
 export default CalculatorArcGallery;
-

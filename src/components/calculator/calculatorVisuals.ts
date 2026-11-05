@@ -9,6 +9,7 @@ import { CalculatorMeta } from '@/utils/calculators/calculatorCatalog';
 
 export interface CalculatorCardData {
   numberStr: string;
+  shortTitle: string;
   tags: string[];
   imageUrl: string;
   formulaBadge: string;
@@ -145,8 +146,38 @@ function createCalculatorSvgUrl(id: string, name: string, category: string): str
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
+const SHORT_TITLES: Record<string, string> = {
+  sip: 'SIP CALCULATOR',
+  lumpsum: 'LUMPSUM CALCULATOR',
+  swp: 'SWP CALCULATOR',
+  'step-up-sip': 'STEP-UP SIP',
+  'step-up-swp': 'STEP-UP SWP',
+  roi: 'ROI CALCULATOR',
+  cagr: 'CAGR CALCULATOR',
+  xirr: 'XIRR CALCULATOR',
+  'stock-average': 'STOCK AVERAGE',
+  inflation: 'INFLATION CALCULATOR',
+  fire: 'FIRE CALCULATOR',
+  retirement: 'RETIREMENT CORPUS',
+  ssy: 'SSY SCHEME',
+  ppf: 'PPF SCHEME',
+  epf: 'EPF SCHEME',
+  fd: 'FD CALCULATOR',
+  rd: 'RD CALCULATOR',
+  nsc: 'NSC SCHEME',
+  apy: 'APY PENSION',
+  'po-mis': 'POST OFFICE MIS',
+  scss: 'SCSS SCHEME',
+  nps: 'NPS PENSION',
+  'home-loan-emi': 'HOME LOAN EMI',
+  'car-loan-emi': 'CAR & PERSONAL LOAN',
+  hra: 'HRA CALCULATOR',
+  salary: 'SALARY / CTC IN-HAND',
+};
+
 export function getCalculatorCardData(calc: CalculatorMeta, index: number): CalculatorCardData {
   const numberStr = String(index + 1).padStart(2, '0');
+  const shortTitle = SHORT_TITLES[calc.id] || calc.name.toUpperCase();
   const tags = CALCULATOR_TAGS[calc.id] ?? [calc.categoryLabel, 'Verified Algorithm', 'Official Formula'];
   const categoryTheme = THEME_PALETTES[calc.category] ?? THEME_PALETTES.default;
   const imageUrl = createCalculatorSvgUrl(calc.id, calc.name, calc.category);
@@ -154,6 +185,7 @@ export function getCalculatorCardData(calc: CalculatorMeta, index: number): Calc
 
   return {
     numberStr,
+    shortTitle,
     tags,
     imageUrl,
     formulaBadge,
