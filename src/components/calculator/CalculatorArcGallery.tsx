@@ -472,15 +472,19 @@ export const CalculatorArcGallery: React.FC<CalculatorArcGalleryProps> = ({
 
                   {/* Main Portrait Visual */}
                   {!hasError && (
-                    <img
-                      src={data.imageUrl}
-                      alt={calc.name}
-                      onLoad={() => handleImageLoad(calc.id)}
-                      onError={() => handleImageError(calc.id)}
-                      className={`w-full h-full object-cover object-top transition-opacity duration-300 ${
-                        isLoaded ? 'opacity-100' : 'opacity-0'
-                      }`}
-                    />
+                    <div className="absolute inset-0 overflow-hidden">
+                      <img
+                        src={data.imageUrl}
+                        alt={calc.name}
+                        onLoad={() => handleImageLoad(calc.id)}
+                        onError={() => handleImageError(calc.id)}
+                        className={`w-full h-full object-cover object-center transition-all duration-500 ${
+                          isLoaded ? 'opacity-100' : 'opacity-0'
+                        }`}
+                      />
+                      {/* Rich gradient overlay for high contrast and photographic depth */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/25 pointer-events-none" />
+                    </div>
                   )}
 
                   {/* Subtle Inner Glass Card Header */}
