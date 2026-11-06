@@ -210,10 +210,12 @@ export function printTaxReport(data: TaxReportData) {
       margin-bottom: 16px;
     }
     .info-card {
-      background: #f8fafc;
+      background: rgba(248, 250, 252, 0.75);
       border: 1px solid #e2e8f0;
       border-radius: 8px;
       padding: 12px 14px;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
     .card-title {
       font-size: 13px;
@@ -252,9 +254,11 @@ export function printTaxReport(data: TaxReportData) {
       text-align: left;
     }
     table.data-table th {
-      background: #f1f5f9;
+      background: rgba(241, 245, 249, 0.85);
       color: #334155;
       font-weight: 700;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
     table.data-table td.num {
       text-align: right;
@@ -262,15 +266,19 @@ export function printTaxReport(data: TaxReportData) {
       font-weight: 600;
     }
     .total-row {
-      background: #eff6ff;
+      background: rgba(239, 246, 255, 0.85);
       font-weight: 700;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
     .comparison-box {
-      background: #f0fdf4;
+      background: rgba(240, 253, 244, 0.8);
       border: 1px solid #bbf7d0;
       border-radius: 8px;
       padding: 12px 14px;
       margin-top: 14px;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
     .comparison-title {
       font-size: 13px;
@@ -287,13 +295,12 @@ export function printTaxReport(data: TaxReportData) {
       line-height: 1.4;
     }
     .watermark-overlay {
-      position: fixed;
+      position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 440px;
-      max-width: 75%;
-      opacity: 0.085;
+      width: 480px;
+      max-width: 85%;
       pointer-events: none;
       z-index: 0;
       display: flex;
@@ -307,6 +314,50 @@ export function printTaxReport(data: TaxReportData) {
       height: auto;
       object-fit: contain;
       display: block;
+      opacity: 0.95;
+      filter: contrast(135%);
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    @media print {
+      body {
+        position: relative !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .watermark-overlay {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 480px !important;
+        max-width: 85% !important;
+        display: flex !important;
+        opacity: 1 !important;
+        z-index: 0 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .watermark-img {
+        width: 100% !important;
+        display: block !important;
+        opacity: 0.95 !important;
+        filter: contrast(135%) !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .info-card {
+        background: rgba(248, 250, 252, 0.75) !important;
+      }
+      table.data-table th {
+        background: rgba(241, 245, 249, 0.85) !important;
+      }
+      .total-row {
+        background: rgba(239, 246, 255, 0.85) !important;
+      }
+      .comparison-box {
+        background: rgba(240, 253, 244, 0.8) !important;
+      }
     }
     .report-content {
       position: relative;
@@ -461,8 +512,11 @@ export function printTaxReport(data: TaxReportData) {
   iframe.style.position = 'fixed';
   iframe.style.right = '0';
   iframe.style.bottom = '0';
-  iframe.style.width = '0';
-  iframe.style.height = '0';
+  iframe.style.width = '800px';
+  iframe.style.height = '1120px';
+  iframe.style.opacity = '0';
+  iframe.style.pointerEvents = 'none';
+  iframe.style.zIndex = '-9999';
   iframe.style.border = '0';
   document.body.appendChild(iframe);
 
@@ -486,13 +540,23 @@ export function printTaxReport(data: TaxReportData) {
   doc.write(html);
   doc.close();
 
-  setTimeout(() => {
+  const triggerPrint = () => {
     iframe.contentWindow?.focus();
     iframe.contentWindow?.print();
     setTimeout(() => {
-      document.body.removeChild(iframe);
+      if (document.body.contains(iframe)) {
+        document.body.removeChild(iframe);
+      }
     }, 2000);
-  }, 400);
+  };
+
+  const watermarkEl = doc.querySelector('.watermark-img') as HTMLImageElement | null;
+  if (watermarkEl && !watermarkEl.complete) {
+    watermarkEl.onload = () => setTimeout(triggerPrint, 250);
+    watermarkEl.onerror = () => setTimeout(triggerPrint, 250);
+  } else {
+    setTimeout(triggerPrint, 400);
+  }
 }
 
 /**
@@ -568,10 +632,13 @@ export async function downloadTaxReportPdf(data: TaxReportData) {
   const boxHeight = 44;
 
   // Box 1: Profile
+  doc.saveGraphicsState();
+  try { doc.setGState(new GState({ opacity: 0.85 })); } catch {}
   doc.setFillColor(248, 250, 252);
   doc.setDrawColor(226, 232, 240);
   doc.setLineWidth(0.3);
   doc.roundedRect(margin, currentY, colWidth, boxHeight, 2, 2, 'FD');
+  doc.restoreGraphicsState();
 
   doc.setFont('ReportFont', 'bold');
   doc.setFontSize(10);
@@ -597,8 +664,11 @@ export async function downloadTaxReportPdf(data: TaxReportData) {
 
   // Box 2: Financial Summary
   const box2X = margin + colWidth + 6;
+  doc.saveGraphicsState();
+  try { doc.setGState(new GState({ opacity: 0.85 })); } catch {}
   doc.setFillColor(248, 250, 252);
   doc.roundedRect(box2X, currentY, colWidth, boxHeight, 2, 2, 'FD');
+  doc.restoreGraphicsState();
 
   doc.setFont('ReportFont', 'bold');
   doc.setFontSize(10);
@@ -638,8 +708,11 @@ export async function downloadTaxReportPdf(data: TaxReportData) {
   const colRuleX = margin + 115;
   const colAmtX = margin + contentWidth - 5;
 
+  doc.saveGraphicsState();
+  try { doc.setGState(new GState({ opacity: 0.85 })); } catch {}
   doc.setFillColor(241, 245, 249);
   doc.rect(margin, currentY, contentWidth, 8, 'F');
+  doc.restoreGraphicsState();
   doc.setFont('ReportFont', 'bold');
   doc.setFontSize(8);
   doc.setTextColor(51, 65, 85);
@@ -680,8 +753,11 @@ export async function downloadTaxReportPdf(data: TaxReportData) {
     }
 
     if (r.isTotal) {
+      doc.saveGraphicsState();
+      try { doc.setGState(new GState({ opacity: 0.85 })); } catch {}
       doc.setFillColor(239, 246, 255);
       doc.rect(margin, currentY, contentWidth, 8, 'F');
+      doc.restoreGraphicsState();
       doc.setFont('ReportFont', 'bold');
       doc.setTextColor(2, 132, 199);
     } else {
@@ -710,10 +786,13 @@ export async function downloadTaxReportPdf(data: TaxReportData) {
       currentY = margin + 10;
     }
 
+    doc.saveGraphicsState();
+    try { doc.setGState(new GState({ opacity: 0.85 })); } catch {}
     doc.setFillColor(240, 253, 244);
     doc.setDrawColor(187, 247, 208);
     doc.setLineWidth(0.3);
     doc.roundedRect(margin, currentY, contentWidth, 26, 2, 2, 'FD');
+    doc.restoreGraphicsState();
 
     doc.setFont('ReportFont', 'bold');
     doc.setFontSize(9.5);
