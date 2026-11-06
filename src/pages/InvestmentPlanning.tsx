@@ -252,6 +252,73 @@ const InvestmentPlanning = () => {
     },
   ];
 
+  const orbitItems: OrbitCardItem[] = [
+    {
+      id: "indian-stock-analysis",
+      number: "01",
+      title: "Indian Stock Analysis",
+      meta: "EQUITIES · NSE & BSE",
+      description: "In-depth fundamental and quantitative evaluation of Indian equities with actionable insights across sectors and market capitalizations.",
+      icon: <TrendingUp className="h-4 w-4" />,
+      badge: "We are still building",
+      linkText: "We are still building",
+      onClick: () => handleStillBuildingClick("Indian Stock Analysis"),
+    },
+    {
+      id: "usa-stock-analysis",
+      number: "02",
+      title: "USA Stock Analysis",
+      meta: "GLOBAL · NASDAQ & NYSE",
+      description: "In-depth research on US equities, focusing on growth stocks, tech companies, and dividend-yielding investments across NASDAQ and NYSE.",
+      icon: <Globe className="h-4 w-4" />,
+      linkText: "Explore USA Markets",
+      linkUrl: "/usa-stock-analysis",
+    },
+    {
+      id: "ipo-analysis",
+      number: "03",
+      title: "IPO Analysis",
+      meta: "PRIMARY MARKET · PIPELINE",
+      description: "Detailed evaluation of upcoming IPOs, including business models, financial health, valuation, and potential for long-term growth.",
+      icon: <FileText className="h-4 w-4" />,
+      linkText: "View IPO Insights",
+      linkUrl: "/ipo-analysis",
+    },
+    {
+      id: "unlisted-shares",
+      number: "04",
+      title: "Unlisted Shares",
+      meta: "PRIVATE EQUITY · PRE-IPO",
+      description: "Access to private equity opportunities in promising companies before they go public, offering potential for significant returns.",
+      icon: <CandlestickChart className="h-4 w-4" />,
+      badge: "We are still building",
+      linkText: "We are still building",
+      onClick: () => handleStillBuildingClick("Unlisted Shares"),
+    },
+    {
+      id: "digital-gold",
+      number: "05",
+      title: "Digital Gold",
+      meta: "SAFE-HAVEN · 24K PURITY",
+      description: "Invest in 99.9% pure gold electronically without worrying about storage, security, or authenticity issues.",
+      icon: <DollarSign className="h-4 w-4" />,
+      badge: "We are still building",
+      linkText: "We are still building",
+      onClick: () => handleStillBuildingClick("Digital Gold"),
+    },
+    {
+      id: "crypto-currency",
+      number: "06",
+      title: "Crypto Currency Investments",
+      meta: "DIGITAL ASSETS · BLOCKCHAIN",
+      description: "Strategic guidance on blockchain assets and cryptocurrencies, helping you navigate this emerging investment class with confidence.",
+      icon: <Sparkles className="h-4 w-4" />,
+      badge: "We are still building",
+      linkText: "We are still building",
+      onClick: () => handleStillBuildingClick("Crypto Currency Investments"),
+    },
+  ];
+
   const headlineWords = ["Maximize", "Your", "Investment", "Potential"];
 
   return (
@@ -276,94 +343,34 @@ const InvestmentPlanning = () => {
           </Link>
         </div>
         
-        {/* 1. COMPACT HERO SECTION WITH DROPPING ANIMATION */}
-        <section className="relative pt-4 sm:pt-6 pb-12 sm:pb-16 overflow-hidden bg-gradient-to-b from-blue-50/40 via-transparent to-transparent dark:from-blue-950/20 dark:via-transparent">
-          
-          {/* Centered Translucent FB Watermark complementing the headline */}
-          <div 
-            aria-hidden="true" 
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none z-0 opacity-[0.055] dark:opacity-[0.075] transition-opacity duration-500"
-          >
-            <img 
-              src={`${import.meta.env.BASE_URL}images/fb-watermark.png`} 
-              alt="" 
-              className="w-[280px] sm:w-[380px] md:w-[460px] lg:w-[540px] h-auto object-contain filter contrast-105 dark:brightness-110" 
-              loading="eager"
-            />
-          </div>
-
-          {/* Ambient Lighting Blooms */}
-          <div className="absolute top-0 right-0 w-1/3 h-full opacity-25 dark:opacity-15 pointer-events-none">
-            <div className="absolute top-[10%] right-[10%] w-64 h-64 rounded-full bg-blue-400/25 filter blur-3xl" />
-            <div className="absolute bottom-[20%] right-[20%] w-48 h-48 rounded-full bg-purple-400/25 filter blur-2xl" />
-          </div>
-          <div className="absolute top-0 left-0 w-1/3 h-full opacity-25 dark:opacity-15 pointer-events-none">
-            <div className="absolute top-[30%] left-[10%] w-56 h-56 rounded-full bg-indigo-400/25 filter blur-3xl" />
-            <div className="absolute bottom-[10%] left-[20%] w-48 h-48 rounded-full bg-cyan-400/25 filter blur-2xl" />
-          </div>
-
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className="max-w-3xl mx-auto text-center">
-              
-              {/* 1. Category Badge dropping from above */}
-              <motion.div 
-                variants={badgeVariants}
-                initial="hidden"
-                animate="visible"
-                className="inline-flex items-center gap-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-full py-1.5 px-4 mb-4 sm:mb-5 border border-blue-200/70 dark:border-blue-900/60 shadow-sm"
-              >
-                <LineChart size={15} className="text-blue-600 dark:text-cyan-400" />
-                <span className="text-xs sm:text-sm font-semibold tracking-wide text-blue-700 dark:text-cyan-300">
-                  Strategic Investment Solutions
-                </span>
-              </motion.div>
-              
-              {/* 2. Headline dropping into place with word-by-word stagger */}
-              <motion.h1 
-                variants={headlineContainerVariants}
-                initial="hidden"
-                animate="visible"
-                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-4 sm:mb-5 tracking-tight flex flex-wrap justify-center gap-x-3 gap-y-1"
-              >
-                {headlineWords.map((word, index) => (
-                  <motion.span 
-                    key={index} 
-                    variants={wordVariants}
-                    className="inline-block bg-gradient-to-r from-blue-700 via-indigo-600 to-purple-700 dark:from-blue-400 dark:via-indigo-300 dark:to-purple-400 bg-clip-text text-transparent"
-                  >
-                    {word}
-                  </motion.span>
-                ))}
-              </motion.h1>
-              
-              {/* 3. Description dropping into position */}
-              <motion.p 
-                variants={descVariants}
-                initial="hidden"
-                animate="visible"
-                className="text-base sm:text-lg md:text-xl text-slate-700 dark:text-slate-300 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed font-normal"
-              >
-                Our expert investment planning services help you navigate financial markets with confidence and build wealth for your future, whether you're in India or abroad.
-              </motion.p>
-
-              {/* 4. Action button entering last */}
-              <motion.div 
-                variants={ctaVariants}
-                initial="hidden"
-                animate="visible"
-                className="flex items-center justify-center pt-2"
-              >
-                <a 
-                  href="#comprehensive-investment-services"
-                  className="inline-flex items-center justify-center px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 dark:bg-cyan-500 dark:hover:bg-cyan-400 dark:text-slate-950 transition-all duration-300 shadow-md shadow-blue-500/20 hover:shadow-lg hover:scale-105 active:scale-100"
+        {/* 1. SCROLL-DRIVEN 3D ORBIT CARD CAROUSEL HERO SECTION */}
+        <OrbitCardCarousel 
+          id="orbit-hero-showcase"
+          label="Strategic Investment Solutions"
+          title={
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-4 sm:mb-5 tracking-tight flex flex-wrap justify-center gap-x-3 gap-y-1">
+              {headlineWords.map((word, index) => (
+                <span 
+                  key={index} 
+                  className="inline-block bg-gradient-to-r from-blue-700 via-indigo-600 to-purple-700 dark:from-blue-400 dark:via-indigo-300 dark:to-purple-400 bg-clip-text text-transparent"
                 >
-                  <span>Explore Services</span>
-                  <ChevronRight size={15} className="ml-1.5" />
-                </a>
-              </motion.div>
-            </div>
-          </div>
-        </section>
+                  {word}
+                </span>
+              ))}
+            </h1>
+          }
+          subtitle="Our expert investment planning services help you navigate financial markets with confidence and build wealth for your future, whether you're in India or abroad."
+          actionButton={
+            <a 
+              href="#why-choose-investment-services"
+              className="inline-flex items-center justify-center px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 dark:bg-cyan-500 dark:hover:bg-cyan-400 dark:text-slate-950 transition-all duration-300 shadow-md shadow-blue-500/20 hover:shadow-lg hover:scale-105 active:scale-100"
+            >
+              <span>Explore Services</span>
+              <ChevronRight size={15} className="ml-1.5" />
+            </a>
+          }
+          items={orbitItems}
+        />
         
         {/* 2. WHY CHOOSE OUR INVESTMENT SERVICES CAROUSEL */}
         <section className="py-8 bg-transparent" id="why-choose-investment-services">

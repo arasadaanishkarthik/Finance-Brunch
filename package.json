@@ -8,7 +8,7 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "test": "node scripts/test-all-38-calculators.cjs && node scripts/test-all-calculators.cjs && node scripts/test-tax-report.cjs && node scripts/test-calculator-exports.cjs && node scripts/test-carousels.cjs && node scripts/test-insurance-print.cjs",
+    "test": "node scripts/test-all-38-calculators.cjs && node scripts/test-all-calculators.cjs && node scripts/test-tax-report.cjs && node scripts/test-calculator-exports.cjs && node scripts/test-carousels.cjs && node scripts/test-insurance-print.cjs && node scripts/test-orbit-carousel.cjs",
     "preview": "vite preview"
   },
   "dependencies": {
