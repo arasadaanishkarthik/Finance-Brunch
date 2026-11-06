@@ -10,22 +10,32 @@ import {
 } from '@/utils/calculatorExportGenerator';
 
 interface DownloadResultsSectionProps {
-  getData: () => CalculatorExportData;
+  getData?: () => CalculatorExportData;
+  exportData?: CalculatorExportData;
+  calculatorTitle?: string;
   className?: string;
 }
 
 export const DownloadResultsSection: React.FC<DownloadResultsSectionProps> = ({
   getData,
+  exportData,
+  calculatorTitle,
   className = '',
 }) => {
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [isExportingDocx, setIsExportingDocx] = useState(false);
   const { toast } = useToast();
 
+  const resolveData = (): CalculatorExportData => {
+    if (getData) return getData();
+    if (exportData) return exportData;
+    throw new Error('No export data provided');
+  };
+
   const handleDownloadPdf = async () => {
     setIsExportingPdf(true);
     try {
-      const data = getData();
+      const data = resolveData();
       await downloadCalculatorPdf(data);
       toast({
         title: 'PDF Report Downloaded',
@@ -46,7 +56,7 @@ export const DownloadResultsSection: React.FC<DownloadResultsSectionProps> = ({
   const handleDownloadDocx = async () => {
     setIsExportingDocx(true);
     try {
-      const data = getData();
+      const data = resolveData();
       await downloadCalculatorDocx(data);
       toast({
         title: 'Word Document Downloaded',

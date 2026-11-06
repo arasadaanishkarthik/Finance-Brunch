@@ -36,6 +36,8 @@ export interface LumpsumYearlyBreakdownItem {
   invested: number;
   futureValue: number;
   estimatedReturns: number;
+  investedAmount: number;
+  openingBalance: number;
 }
 
 export interface LumpsumCalculationResult {
@@ -128,9 +130,12 @@ export function calculateLumpsum(inputs: LumpsumCalculatorInputs): LumpsumCalcul
       ? initialInvestment
       : initialInvestment * Math.pow(1 + annualRate, y);
 
+    const prevFv = y === 1 ? initialInvestment : initialInvestment * Math.pow(1 + annualRate, y - 1);
     yearlyBreakdown.push({
       year: y,
       invested: initialInvestment,
+      investedAmount: initialInvestment,
+      openingBalance: Math.round(prevFv),
       futureValue: Math.round(fvAtYear),
       estimatedReturns: Math.round(Math.max(0, fvAtYear - initialInvestment)),
     });

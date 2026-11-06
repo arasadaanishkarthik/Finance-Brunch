@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { 
   LineChart, ChevronRight, ExternalLink, 
   Info, Clock, HomeIcon, Phone,
-  ArrowRight, Shield
+  ArrowRight, Shield,
+  TrendingUp, Globe, FileText, CandlestickChart, DollarSign, Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -14,6 +15,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { USAStockPopup } from '@/components/investment/USAStockPopup';
 import { AppleScrollShowcase } from '@/components/investment/AppleScrollShowcase';
 import { InvestmentArcGallery } from '@/components/investment/InvestmentArcGallery';
+import { OrbitCardCarousel, OrbitCardItem } from '@/components/investment/OrbitCardCarousel';
 
 const InvestmentPlanning = () => {
   const { toast } = useToast();
