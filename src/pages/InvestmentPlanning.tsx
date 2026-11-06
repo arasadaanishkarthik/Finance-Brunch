@@ -13,8 +13,6 @@ import { useToast } from '@/hooks/use-toast';
 import ScrollToTop from '@/components/ui/ScrollToTop';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { USAStockPopup } from '@/components/investment/USAStockPopup';
-import { AppleScrollShowcase } from '@/components/investment/AppleScrollShowcase';
-import { InvestmentArcGallery } from '@/components/investment/InvestmentArcGallery';
 import { OrbitCardCarousel, OrbitCardItem } from '@/components/investment/OrbitCardCarousel';
 
 const InvestmentPlanning = () => {
@@ -364,7 +362,7 @@ const InvestmentPlanning = () => {
           subtitle="Our expert investment planning services help you navigate financial markets with confidence and build wealth for your future, whether you're in India or abroad."
           actionButton={
             <a 
-              href="#why-choose-investment-services"
+              href="#comprehensive-investment-services"
               className="inline-flex items-center justify-center px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 dark:bg-cyan-500 dark:hover:bg-cyan-400 dark:text-slate-950 transition-all duration-300 shadow-md shadow-blue-500/20 hover:shadow-lg hover:scale-105 active:scale-100"
             >
               <span>Explore Services</span>
@@ -374,12 +372,7 @@ const InvestmentPlanning = () => {
           items={orbitItems}
         />
         
-        {/* 2. WHY CHOOSE OUR INVESTMENT SERVICES CAROUSEL */}
-        <section className="py-8 bg-transparent" id="why-choose-investment-services">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <InvestmentArcGallery />
-          </div>
-        </section>
+        
         
         {/* 3. COMPREHENSIVE INVESTMENT SERVICES SECTION */}
         <section 
