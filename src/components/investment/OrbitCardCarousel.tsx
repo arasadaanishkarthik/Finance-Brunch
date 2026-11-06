@@ -343,7 +343,7 @@ export const OrbitCardCarousel: React.FC<OrbitCardCarouselProps> = ({
     return (
       <div 
         className={cn(
-          'relative w-full h-full flex flex-col p-5 sm:p-5.5 rounded-[22px] border backdrop-blur-xl transition-all',
+          'relative w-full h-full flex flex-col p-4 sm:p-4.5 rounded-[20px] border backdrop-blur-xl transition-all',
           cardTheme.bg,
           'border-slate-200/90 dark:border-slate-800/90',
           'group select-none'
@@ -351,23 +351,23 @@ export const OrbitCardCarousel: React.FC<OrbitCardCarouselProps> = ({
         style={{
           borderTopColor: cardTheme.topBorder,
           borderTopWidth: '4px',
-          boxShadow: `0 16px 36px -12px ${cardTheme.shadow}, 0 0 16px 0 ${cardTheme.shadow}`,
+          boxShadow: `0 14px 30px -10px ${cardTheme.shadow}, 0 0 14px 0 ${cardTheme.shadow}`,
         }}
       >
         {/* Header Row: Index Number on Left, Icon or Badge on Right */}
-        <div className="flex items-center justify-between gap-2 mb-2.5">
-          <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80 tracking-wider">
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <span className="font-mono text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80 tracking-wider">
             {cardNumber}
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {item.badge && (
-              <span className="font-mono text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+              <span className="font-mono text-[9.5px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
                 {item.badge}
               </span>
             )}
             {item.icon && (
               <div 
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-white shadow-sm flex-shrink-0"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-white shadow-sm flex-shrink-0"
                 style={{ backgroundColor: cardTheme.topBorder }}
               >
                 {item.icon}
@@ -379,7 +379,7 @@ export const OrbitCardCarousel: React.FC<OrbitCardCarouselProps> = ({
         {/* Small Monospace Meta Line */}
         {item.meta && (
           <div 
-            className="font-mono text-[10px] sm:text-[11px] uppercase tracking-wider font-semibold mb-1"
+            className="font-mono text-[9.5px] sm:text-[10px] uppercase tracking-wider font-semibold mb-1"
             style={{ color: cardTheme.topBorder }}
           >
             {item.meta}
@@ -387,12 +387,12 @@ export const OrbitCardCarousel: React.FC<OrbitCardCarouselProps> = ({
         )}
 
         {/* Bold Title */}
-        <h3 className={cn('text-lg sm:text-xl font-bold tracking-tight mb-1 line-clamp-1', cardTheme.text)}>
+        <h3 className={cn('text-base sm:text-lg font-bold tracking-tight mb-1 line-clamp-1', cardTheme.text)}>
           {item.title}
         </h3>
 
         {/* Short Description */}
-        <p className={cn('text-xs leading-relaxed mb-3 flex-grow line-clamp-2', cardTheme.mutedText)}>
+        <p className={cn('text-[11.5px] sm:text-xs leading-relaxed mb-2.5 flex-grow line-clamp-2', cardTheme.mutedText)}>
           {item.description}
         </p>
 
@@ -402,29 +402,29 @@ export const OrbitCardCarousel: React.FC<OrbitCardCarouselProps> = ({
             <Link
               to={item.linkUrl}
               className={cn(
-                'inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-xl transition-all duration-300 group/btn shadow-md hover:shadow-lg',
+                'inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-300 group/btn shadow-md hover:shadow-lg',
                 cardTheme.button
               )}
             >
               <span>{item.linkText || 'Learn More'}</span>
-              <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover/btn:translate-x-1" />
+              <ArrowRight className="w-3 h-3 transition-transform duration-300 group-hover/btn:translate-x-1" />
             </Link>
           ) : item.onClick ? (
             <button
               type="button"
               onClick={item.onClick}
               className={cn(
-                'inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-xl transition-all duration-300 group/btn shadow-md hover:shadow-lg',
+                'inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-300 group/btn shadow-md hover:shadow-lg',
                 cardTheme.button
               )}
             >
               <span>{item.linkText || 'Learn More'}</span>
-              <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover/btn:translate-x-1" />
+              <ArrowRight className="w-3 h-3 transition-transform duration-300 group-hover/btn:translate-x-1" />
             </button>
           ) : (
             <div 
               className={cn(
-                'inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg opacity-70',
+                'inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-md opacity-70',
                 cardTheme.text
               )}
             >
@@ -450,7 +450,7 @@ export const OrbitCardCarousel: React.FC<OrbitCardCarouselProps> = ({
       {/* Soft Radial Glow in the Site's Accent Color, Centered Behind the Title */}
       <div 
         aria-hidden="true" 
-        className="absolute left-1/2 top-[65%] -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] md:w-[900px] md:h-[600px] rounded-full pointer-events-none z-0"
+        className="absolute left-1/2 top-[58%] -translate-x-1/2 -translate-y-1/2 w-[700px] h-[450px] md:w-[900px] md:h-[500px] rounded-full pointer-events-none z-0"
         style={{
           background: 'radial-gradient(circle at center, rgba(37, 99, 235, 0.14) 0%, rgba(6, 182, 212, 0.08) 40%, transparent 70%)',
           filter: 'blur(40px)',
@@ -460,7 +460,7 @@ export const OrbitCardCarousel: React.FC<OrbitCardCarouselProps> = ({
       {/* Subtle Translucent Brand Watermark */}
       <div 
         aria-hidden="true" 
-        className="absolute left-1/2 top-[58%] -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none z-0 opacity-[0.04] dark:opacity-[0.055]"
+        className="absolute left-1/2 top-[54%] -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none z-0 opacity-[0.04] dark:opacity-[0.05]"
       >
         <img 
           src={`${import.meta.env.BASE_URL}images/fb-watermark.png`} 
@@ -477,7 +477,7 @@ export const OrbitCardCarousel: React.FC<OrbitCardCarouselProps> = ({
           className="relative w-full h-full flex items-center justify-center overflow-hidden z-10"
         >
           {/* Header block (Title, Label, Subtitle, Button) situated at the TOP of the section */}
-          <div className="absolute left-1/2 top-4 sm:top-6 lg:top-8 -translate-x-1/2 z-30 text-center max-w-3xl px-6 pointer-events-auto select-text">
+          <div className="absolute left-1/2 top-3 sm:top-5 lg:top-6 -translate-x-1/2 z-30 text-center max-w-3xl px-6 pointer-events-auto select-text">
             {/* Label (small text above the title) */}
             {label && (
               <div className="inline-flex items-center gap-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-full py-1 px-3.5 mb-2.5 border border-blue-200/70 dark:border-blue-900/60 shadow-sm">
@@ -521,7 +521,7 @@ export const OrbitCardCarousel: React.FC<OrbitCardCarouselProps> = ({
               <div
                 key={item.id || idx}
                 ref={(el) => { cardRefs.current[idx] = el; }}
-                className="absolute top-[65%] left-1/2 w-[300px] sm:w-[320px] md:w-[340px] h-[240px] will-change-transform pointer-events-none"
+                className="absolute top-[58%] left-1/2 w-[280px] sm:w-[300px] md:w-[320px] h-[215px] sm:h-[225px] will-change-transform pointer-events-none"
                 style={{
                   transformOrigin: 'center center',
                 }}

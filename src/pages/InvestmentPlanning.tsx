@@ -348,7 +348,7 @@ const InvestmentPlanning = () => {
           id="orbit-hero-showcase"
           label="Strategic Investment Solutions"
           title={
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-4 sm:mb-5 tracking-tight flex flex-wrap justify-center gap-x-3 gap-y-1">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-2 sm:mb-3 tracking-tight flex flex-wrap justify-center gap-x-3 gap-y-1">
               {headlineWords.map((word, index) => (
                 <span 
                   key={index} 
