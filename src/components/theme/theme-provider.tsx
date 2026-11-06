@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, startTransition, useContext, useEffect, useState } from "react";
 
 type Theme = "dark" | "light" | "system";
 
@@ -53,6 +53,20 @@ export function ThemeProvider({
     root.classList.add(theme);
   }, [theme]);
 
+  const applyThemeClass = (newTheme: Theme) => {
+    const root = window.document.documentElement;
+    root.classList.remove("light", "dark");
+
+    if (newTheme === "system") {
+      root.classList.add(
+        window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+      );
+      return;
+    }
+
+    root.classList.add(newTheme);
+  };
+
   const value = {
     theme,
     setTheme: (newTheme: Theme) => {
@@ -61,7 +75,10 @@ export function ThemeProvider({
       } catch {
         // ignore
       }
-      setTheme(newTheme);
+      applyThemeClass(newTheme);
+      startTransition(() => {
+        setTheme(newTheme);
+      });
     },
   };
 
