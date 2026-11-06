@@ -17,8 +17,8 @@ const RESTING_Y = TOTAL_SEGMENTS * SEGMENT_LEN; // 120px
 
 const DEFAULT_CONFIG = {
   gravity: 1250,
-  damping: 0.94,
-  iterations: 20,
+  damping: 0.975,
+  iterations: 24,
   stretchMax: 32,
   stretchToggle: 22,
   maxVelocity: 22,
@@ -28,14 +28,14 @@ const DEFAULT_CONFIG = {
 // Generate SVG smooth quadratic bezier path through Verlet points
 function pointsToSvgPath(pts: Point[]): string {
   if (!pts || pts.length < 2) return '';
-  let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+  let d = `M ${pts[0].x.toFixed(2)} ${pts[0].y.toFixed(2)}`;
   for (let i = 1; i < pts.length - 1; i++) {
     const mx = (pts[i].x + pts[i + 1].x) / 2;
     const my = (pts[i].y + pts[i + 1].y) / 2;
-    d += ` Q ${pts[i].x.toFixed(1)} ${pts[i].y.toFixed(1)} ${mx.toFixed(1)} ${my.toFixed(1)}`;
+    d += ` Q ${pts[i].x.toFixed(2)} ${pts[i].y.toFixed(2)} ${mx.toFixed(2)} ${my.toFixed(2)}`;
   }
   const last = pts.length - 1;
-  d += ` L ${pts[last].x.toFixed(1)} ${pts[last].y.toFixed(1)}`;
+  d += ` L ${pts[last].x.toFixed(2)} ${pts[last].y.toFixed(2)}`;
   return d;
 }
 
@@ -232,7 +232,6 @@ export function PullCordThemeToggle() {
     let animFrame = 0;
     let isRunning = false;
     let lastTime = 0;
-    let prevDt = 0;
     let wakeTimestamp = 0;
 
     const renderSvg = () => {
@@ -255,10 +254,10 @@ export function PullCordThemeToggle() {
 
     const step = (time: number) => {
       const { gravity, damping, iterations } = configRef.current;
-      const dt = lastTime ? Math.min(0.04, Math.max(0.004, (time - lastTime) / 1000)) : 1 / 60;
+      const dt = lastTime ? Math.min(0.025, Math.max(0.008, (time - lastTime) / 1000)) : 1 / 60;
       lastTime = time;
 
-      const drag = (prevDt > 0 ? dt / prevDt : 1) * Math.pow(damping, 60 * dt);
+      const drag = Math.pow(damping, 60 * dt);
       const dtSq = dt * dt;
 
       pts[lastIdx].fixed = isDraggingRef.current;
@@ -311,7 +310,6 @@ export function PullCordThemeToggle() {
         }
       }
 
-      prevDt = dt;
       renderSvg();
 
       // 3. Kinetic energy & settle sleep detection
@@ -348,7 +346,6 @@ export function PullCordThemeToggle() {
       if (!isRunning) {
         isRunning = true;
         lastTime = 0;
-        prevDt = 0;
         animFrame = requestAnimationFrame(step);
       }
     };
