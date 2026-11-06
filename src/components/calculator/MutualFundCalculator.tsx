@@ -22,9 +22,15 @@ const MutualFundCalculator = () => {
 
   // Resolve active tab from URL query param or specific calculator route path
   const resolveTab = useCallback(() => {
-    const tabParam = searchParams.get('tab');
-    if (tabParam && ['sip', 'stepup', 'lumpsum', 'swp'].includes(tabParam.toLowerCase())) {
-      return tabParam.toLowerCase();
+    const tabParam = searchParams.get('tab') || searchParams.get('calc');
+    if (tabParam) {
+      const lower = tabParam.toLowerCase();
+      if (['stepup', 'step-up', 'step-up-sip', 'stepupsip'].includes(lower)) {
+        return 'stepup';
+      }
+      if (lower === 'sip') return 'sip';
+      if (lower === 'lumpsum') return 'lumpsum';
+      if (lower === 'swp') return 'swp';
     }
     const path = location.pathname.toLowerCase();
     if (path.includes('step-up') || path.includes('stepup')) return 'stepup';

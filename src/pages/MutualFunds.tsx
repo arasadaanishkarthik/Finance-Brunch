@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   ArrowLeft, TrendingUp, ShieldCheck, Sparkles, PieChart, 
   CheckCircle2, ChevronRight, Shield, ExternalLink, ChevronDown,
@@ -43,6 +43,13 @@ const fundCategories = [
 
 const MutualFunds = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const handleSelectCalculatorTab = (tab: 'sip' | 'stepup' | 'lumpsum' | 'swp') => {
+    setSearchParams({ tab }, { replace: true });
+    document.getElementById('calculator-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -382,7 +389,7 @@ const MutualFunds = () => {
               <div className="p-5 sm:p-6 pt-0">
                 <Button
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold shadow-sm transition-all"
-                  onClick={() => navigate('/calculator?calc=sip')}
+                  onClick={() => handleSelectCalculatorTab('sip')}
                 >
                   Calculate SIP <ChevronRight className="ml-1 h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
                 </Button>
@@ -410,7 +417,7 @@ const MutualFunds = () => {
               <div className="p-5 sm:p-6 pt-0">
                 <Button
                   className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-semibold shadow-sm transition-all"
-                  onClick={() => navigate('/calculator?calc=step-up-sip')}
+                  onClick={() => handleSelectCalculatorTab('stepup')}
                 >
                   Calculate Step-Up SIP <ChevronRight className="ml-1 h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
                 </Button>
@@ -438,7 +445,7 @@ const MutualFunds = () => {
               <div className="p-5 sm:p-6 pt-0">
                 <Button
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold shadow-sm transition-all"
-                  onClick={() => navigate('/calculator?calc=lumpsum')}
+                  onClick={() => handleSelectCalculatorTab('lumpsum')}
                 >
                   Calculate Lumpsum <ChevronRight className="ml-1 h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
                 </Button>
@@ -466,7 +473,7 @@ const MutualFunds = () => {
               <div className="p-5 sm:p-6 pt-0">
                 <Button
                   className="w-full bg-amber-600 hover:bg-amber-700 text-white text-xs sm:text-sm font-semibold shadow-sm transition-all"
-                  onClick={() => navigate('/calculator?calc=swp')}
+                  onClick={() => handleSelectCalculatorTab('swp')}
                 >
                   Calculate SWP <ChevronRight className="ml-1 h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
                 </Button>

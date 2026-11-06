@@ -13,6 +13,7 @@ import ScrollToTop from '@/components/ui/ScrollToTop';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { USAStockPopup } from '@/components/investment/USAStockPopup';
 import { AppleScrollShowcase } from '@/components/investment/AppleScrollShowcase';
+import { InvestmentArcGallery } from '@/components/investment/InvestmentArcGallery';
 
 const InvestmentPlanning = () => {
   const { toast } = useToast();
@@ -158,6 +159,13 @@ const InvestmentPlanning = () => {
     return `${import.meta.env.BASE_URL}${clean}`;
   };
 
+  const handleStillBuildingClick = (serviceName: string) => {
+    toast.info(`${serviceName} — We are still building`, {
+      description: "Our investment research and engineering team is actively building this service to institutional standards. It will be launched shortly.",
+      duration: 5000,
+    });
+  };
+
   interface InvestmentCardItem {
     id: string;
     title: string;
@@ -168,6 +176,8 @@ const InvestmentPlanning = () => {
     icon: React.ReactNode;
     linkTo?: string;
     onClick?: () => void;
+    badge?: string;
+    isBuilding?: boolean;
   }
 
   const investmentCards: InvestmentCardItem[] = [
@@ -177,9 +187,11 @@ const InvestmentPlanning = () => {
       image: "/lovable-uploads/06b665ec-50f4-4f68-b7fe-836df10af649.png",
       imageAlt: "Indian Stock Analysis - BSE Building",
       description: "Expert analysis of Indian equity markets with actionable insights on stocks across various sectors and market capitalizations.",
-      buttonText: "Explore Indian Markets",
-      icon: <ChevronRight className="ml-2 h-4 w-4" />,
-      linkTo: "/indian-stock-analysis",
+      buttonText: "We are still building",
+      badge: "We are still building",
+      isBuilding: true,
+      icon: <Clock className="ml-2 h-4 w-4" />,
+      onClick: () => handleStillBuildingClick("Indian Stock Analysis"),
     },
     {
       id: "usa-stock-analysis",
@@ -187,9 +199,9 @@ const InvestmentPlanning = () => {
       image: "/lovable-uploads/39526ab9-be38-46a7-9a10-857828b19686.png",
       imageAlt: "USA Stock Analysis - Wall Street",
       description: "In-depth research on US equities, focusing on growth stocks, tech companies, and dividend-yielding investments across NASDAQ and NYSE.",
-      buttonText: "Explore",
-      icon: <ExternalLink className="ml-2 h-4 w-4" />,
-      onClick: () => setUsaStockPopupOpen(true),
+      buttonText: "Explore USA Markets",
+      icon: <ChevronRight className="ml-2 h-4 w-4" />,
+      linkTo: "/usa-stock-analysis",
     },
     {
       id: "ipo-analysis",
@@ -207,9 +219,11 @@ const InvestmentPlanning = () => {
       image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f",
       imageAlt: "Unlisted Shares",
       description: "Access to private equity opportunities in promising companies before they go public, offering potential for significant returns.",
-      buttonText: "Explore Unlisted Shares",
-      icon: <ArrowRight className="ml-2 h-4 w-4" />,
-      linkTo: "/unlisted-shares",
+      buttonText: "We are still building",
+      badge: "We are still building",
+      isBuilding: true,
+      icon: <Clock className="ml-2 h-4 w-4" />,
+      onClick: () => handleStillBuildingClick("Unlisted Shares"),
     },
     {
       id: "digital-gold",
@@ -217,9 +231,11 @@ const InvestmentPlanning = () => {
       image: "/lovable-uploads/75e0d2e9-6d50-49f9-abe9-5236913686da.png",
       imageAlt: "Digital Gold",
       description: "Invest in 99.9% pure gold electronically without worrying about storage, security, or authenticity issues.",
-      buttonText: "Coming Soon",
-      icon: <Info className="ml-2 h-4 w-4" />,
-      onClick: handleDigitalGoldClick,
+      buttonText: "We are still building",
+      badge: "We are still building",
+      isBuilding: true,
+      icon: <Clock className="ml-2 h-4 w-4" />,
+      onClick: () => handleStillBuildingClick("Digital Gold"),
     },
     {
       id: "crypto-currency",
@@ -227,9 +243,11 @@ const InvestmentPlanning = () => {
       image: "/lovable-uploads/b7af595c-860c-4bed-8735-64391a005af9.png",
       imageAlt: "Crypto Currency",
       description: "Strategic guidance on blockchain assets and cryptocurrencies, helping you navigate this emerging investment class with confidence.",
-      buttonText: "Coming Soon",
+      buttonText: "We are still building",
+      badge: "We are still building",
+      isBuilding: true,
       icon: <Clock className="ml-2 h-4 w-4" />,
-      onClick: handleCryptoClick,
+      onClick: handleStillBuildingClick("Crypto Currency Investments"),
     },
   ];
 
@@ -347,7 +365,11 @@ const InvestmentPlanning = () => {
         </section>
         
         {/* 2. WHY CHOOSE OUR INVESTMENT SERVICES CAROUSEL */}
-        <AppleScrollShowcase />
+        <section className="py-8 bg-transparent" id="why-choose-investment-services">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <InvestmentArcGallery />
+          </div>
+        </section>
         
         {/* 3. COMPREHENSIVE INVESTMENT SERVICES SECTION */}
         <section 
@@ -388,7 +410,14 @@ const InvestmentPlanning = () => {
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                       loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent pointer-events-none" />
+                    {card.badge && (
+                      <div className="absolute top-3 right-3 z-10">
+                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500 text-slate-950 shadow-md backdrop-blur-md border border-amber-300 font-mono">
+                          {card.badge}
+                        </span>
+                      </div>
+                    )}
                     <div className="absolute bottom-0 left-0 p-4">
                       <h3 className="text-xl font-bold text-white tracking-tight">{card.title}</h3>
                     </div>
@@ -407,7 +436,11 @@ const InvestmentPlanning = () => {
                         </Link>
                       ) : (
                         <Button 
-                          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-sm transition-colors"
+                          className={`w-full font-medium shadow-sm transition-all ${
+                            card.isBuilding
+                              ? 'bg-amber-600/90 hover:bg-amber-600 text-white border border-amber-400/30 font-semibold'
+                              : 'bg-blue-600 hover:bg-blue-700 text-white'
+                          }`}
                           onClick={card.onClick}
                         >
                           <span>{card.buttonText}</span>

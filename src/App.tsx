@@ -19,6 +19,7 @@ const Calculator = lazy(() => import('./pages/Calculator'));
 const MutualFunds = lazy(() => import('./pages/MutualFunds'));
 const IncomeTaxFiling = lazy(() => import('./pages/IncomeTaxFiling'));
 const IndianStockAnalysis = lazy(() => import('./pages/IndianStockAnalysis'));
+const USAStockAnalysis = lazy(() => import('./pages/USAStockAnalysis'));
 const UnlistedShares = lazy(() => import('./pages/UnlistedShares'));
 const InvestmentPlanning = lazy(() => import('./pages/InvestmentPlanning'));
 const WealthManagement = lazy(() => import('./pages/WealthManagement'));
@@ -183,6 +184,7 @@ function App() {
                   <Route path="/wealth-management" element={<RegulatoryDisclaimerGuard><WealthManagement /></RegulatoryDisclaimerGuard>} />
                   <Route path="/nri-services" element={<RegulatoryDisclaimerGuard><NRIServices /></RegulatoryDisclaimerGuard>} />
                   <Route path="/indian-stock-analysis" element={<RegulatoryDisclaimerGuard><IndianStockAnalysis /></RegulatoryDisclaimerGuard>} />
+                  <Route path="/usa-stock-analysis" element={<RegulatoryDisclaimerGuard><USAStockAnalysis /></RegulatoryDisclaimerGuard>} />
                   <Route path="/unlisted-shares" element={<RegulatoryDisclaimerGuard><UnlistedShares /></RegulatoryDisclaimerGuard>} />
                   <Route path="/ipo-analysis" element={<RegulatoryDisclaimerGuard><IPOAnalysis /></RegulatoryDisclaimerGuard>} />
 

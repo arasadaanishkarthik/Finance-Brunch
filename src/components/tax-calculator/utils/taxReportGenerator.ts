@@ -26,6 +26,7 @@ import {
   FINANCE_BRUNCH_LOGO_RAW,
   FINANCE_BRUNCH_LOGO_DATA_URL,
   LOGO_ASPECT_RATIO,
+  FINANCE_BRUNCH_WATERMARK_DATA_URL,
 } from './reportLogo';
 import { registerReportFonts } from './reportFont';
 import {
@@ -285,9 +286,39 @@ export function printTaxReport(data: TaxReportData) {
       color: #64748b;
       line-height: 1.4;
     }
+    .watermark-overlay {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 440px;
+      max-width: 75%;
+      opacity: 0.085;
+      pointer-events: none;
+      z-index: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .watermark-img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+    .report-content {
+      position: relative;
+      z-index: 1;
+    }
   </style>
 </head>
 <body>
+  <div class="watermark-overlay" aria-hidden="true">
+    <img src="${FINANCE_BRUNCH_WATERMARK_DATA_URL}" alt="Finance Brunch" class="watermark-img" />
+  </div>
+  <div class="report-content">
   <div class="header-row">
     <div>
       <div class="brand-title">Finance Brunch Advisory Services</div>
@@ -420,6 +451,7 @@ export function printTaxReport(data: TaxReportData) {
   <div style="margin-top: 18px; padding-top: 12px; border-top: 1px solid #cbd5e1; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #64748b;">
     <strong style="color: #0f172a; font-size: 12px;">Finance Brunch</strong>
     <span>Email: admin@financebrunch.in &nbsp;|&nbsp; Phone: +91 7842-494-981 &nbsp;|&nbsp; Website: https://financebrunch.in</span>
+  </div>
   </div>
 </body>
 </html>`;
