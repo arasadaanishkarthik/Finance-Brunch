@@ -93,9 +93,32 @@
     @apply bg-background text-foreground;
     transition: background-color 0.3s ease, color 0.3s ease;
   }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 260ms;
+    animation-timing-function: ease-in-out;
+  }
+  ::view-transition-old(root) {
+    animation-name: fb-theme-out;
+  }
+  ::view-transition-new(root) {
+    animation-name: fb-theme-in;
+  }
   html {
     scroll-behavior: auto;
     scroll-padding-top: 5.5rem;
+  }
+}
+
+@keyframes fb-theme-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fb-theme-in {
+  from {
+    opacity: 0;
   }
 }
 
@@ -910,4 +933,3 @@
     transition: none !important;
   }
 }
-

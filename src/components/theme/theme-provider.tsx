@@ -1,4 +1,4 @@
-import { createContext, startTransition, useContext, useEffect, useState } from "react";
+import { createContext, flushSync, useContext, useEffect, useState } from "react";
 
 type Theme = "dark" | "light" | "system";
 
@@ -11,6 +11,12 @@ type ThemeProviderProps = {
 type ThemeProviderState = {
   theme: Theme;
   setTheme: (theme: Theme) => void;
+};
+
+type ViewTransitionDocument = Document & {
+  startViewTransition?: (update: () => void) => {
+    finished: Promise<void>;
+  };
 };
 
 const initialState: ThemeProviderState = {
@@ -75,10 +81,19 @@ export function ThemeProvider({
       } catch {
         // ignore
       }
-      applyThemeClass(newTheme);
-      startTransition(() => {
-        setTheme(newTheme);
-      });
+      const updateTheme = () => {
+        applyThemeClass(newTheme);
+        flushSync(() => setTheme(newTheme));
+      };
+      const documentWithViewTransition = window.document as ViewTransitionDocument;
+
+      if (documentWithViewTransition.startViewTransition) {
+        const transition = documentWithViewTransition.startViewTransition(updateTheme);
+        transition.finished.catch(() => undefined);
+        return;
+      }
+
+      updateTheme();
     },
   };
 
