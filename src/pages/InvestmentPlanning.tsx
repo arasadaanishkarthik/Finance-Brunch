@@ -327,28 +327,26 @@ const InvestmentPlanning = () => {
       <USAStockPopup open={usaStockPopupOpen} onOpenChange={setUsaStockPopupOpen} />
 
       {/* Main Container with reduced top spacing */}
-      <main className="flex-grow pt-16 sm:pt-20">
-        
-        {/* Compact Back-to-Home utility row */}
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-1">
-          <Link to="/">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 bg-white/70 dark:bg-slate-900/60 border-slate-200/80 dark:border-slate-800/80 backdrop-blur-md rounded-full px-3 py-1.5 transition-all shadow-sm hover:shadow"
-            >
-              <HomeIcon className="h-3.5 w-3.5" />
-              <span>Back to Home</span>
-            </Button>
-          </Link>
-        </div>
+      <main className="flex-grow">
         
         {/* 1. SCROLL-DRIVEN 3D ORBIT CARD CAROUSEL HERO SECTION */}
         <OrbitCardCarousel 
           id="orbit-hero-showcase"
+          topBar={
+            <Link to="/">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 bg-white/80 dark:bg-slate-900/80 border-slate-200/80 dark:border-slate-800/80 backdrop-blur-md rounded-full px-3.5 py-1.5 transition-all shadow-sm hover:shadow"
+              >
+                <HomeIcon className="h-3.5 w-3.5" />
+                <span>Back to Home</span>
+              </Button>
+            </Link>
+          }
           label="Strategic Investment Solutions"
           title={
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-2 sm:mb-3 tracking-tight flex flex-wrap justify-center gap-x-3 gap-y-1">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-black mb-2 sm:mb-2.5 tracking-tight flex flex-wrap justify-center gap-x-3 gap-y-1">
               {headlineWords.map((word, index) => (
                 <span 
                   key={index} 
