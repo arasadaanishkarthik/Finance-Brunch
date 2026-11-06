@@ -1,15 +1,15 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, {
   useEffect,
   useRef,
   useState,
   useCallback,
-  useMemo,
   type ReactNode,
 } from 'react';
 import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowRight, ChevronRight, Compass } from 'lucide-react';
+import { ArrowRight, Compass } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Register ScrollTrigger plugin safely
@@ -144,7 +144,11 @@ export const OrbitCardCarousel: React.FC<OrbitCardCarouselProps> = ({
   const sectionRef = useRef<HTMLElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [isDesktopOrbit, setIsDesktopOrbit] = useState(false);
+  const [isDesktopOrbit, setIsDesktopOrbit] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return !prefersReducedMotion && window.innerWidth >= ORBIT_CAROUSEL_CONSTANTS.desktopBreakpoint;
+  });
 
   const N = items.length;
 
@@ -303,11 +307,14 @@ export const OrbitCardCarousel: React.FC<OrbitCardCarouselProps> = ({
           window.addEventListener('resize', handleResize);
 
           // Initial render tick
-          requestAnimationFrame(() => {
-            progressState.current.entrance = entranceTrigger.progress || 0;
+          const applyInitialTransforms = () => {
+            const isAtTop = typeof window !== 'undefined' && window.scrollY <= 10;
+            progressState.current.entrance = isAtTop ? 1 : (entranceTrigger.progress ?? 1);
             progressState.current.rotation = rotationTrigger.progress || 0;
             updateOrbitTransforms();
-          });
+          };
+          applyInitialTransforms();
+          requestAnimationFrame(applyInitialTransforms);
 
           return () => {
             window.removeEventListener('resize', handleResize);
@@ -339,6 +346,14 @@ export const OrbitCardCarousel: React.FC<OrbitCardCarouselProps> = ({
       ctx.revert();
     };
   }, [N, updateOrbitTransforms]);
+
+  // Synchronize transforms when isDesktopOrbit changes
+  useEffect(() => {
+    if (isDesktopOrbit) {
+      updateOrbitTransforms();
+      ScrollTrigger.refresh();
+    }
+  }, [isDesktopOrbit, updateOrbitTransforms]);
 
   // Render Card Content
   const renderCardInner = (item: OrbitCardItem, idx: number, cardTheme: OrbitThemeItem) => {
