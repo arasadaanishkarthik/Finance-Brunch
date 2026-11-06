@@ -10,10 +10,10 @@ interface Point {
   fixed: boolean;
 }
 
-// 16 segments of 13px = 208px resting length
-const TOTAL_SEGMENTS = 16;
-const SEGMENT_LEN = 13;
-const RESTING_Y = TOTAL_SEGMENTS * SEGMENT_LEN; // 208px
+// 12 segments of 10px = 120px resting length
+const TOTAL_SEGMENTS = 12;
+const SEGMENT_LEN = 10;
+const RESTING_Y = TOTAL_SEGMENTS * SEGMENT_LEN; // 120px
 
 const DEFAULT_CONFIG = {
   gravity: 1250,
@@ -372,7 +372,7 @@ export function PullCordThemeToggle() {
           right: anchorRight !== null ? `${anchorRight}px` : 'var(--pullcord-right, 2.5rem)',
           zIndex: 'var(--pullcord-z, 70)',
           width: 64,
-          height: 380,
+          height: 220,
           pointerEvents: 'none',
         }}
       >
@@ -385,9 +385,9 @@ export function PullCordThemeToggle() {
           }}
         >
           <svg
-            viewBox="0 0 64 380"
+            viewBox="0 0 64 220"
             width={64}
-            height={380}
+            height={220}
             aria-hidden="true"
             style={{ overflow: 'visible' }}
           >
@@ -734,7 +734,7 @@ export function PullCordThemeToggle() {
           aria-hidden="true"
           style={{
             position: 'fixed',
-            top: 'calc(var(--pullcord-top, 0px) + 204px)',
+            top: `calc(var(--pullcord-top, 0px) + ${RESTING_Y - 4}px)`,
             right: anchorRight !== null ? `${anchorRight + 54}px` : 'calc(var(--pullcord-right, 2.5rem) + 54px)',
             zIndex: 'calc(var(--pullcord-z, 70) - 1)',
           }}

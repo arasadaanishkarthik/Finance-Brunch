@@ -367,18 +367,17 @@ export default function Navbar() {
 
           {/* Pull Cord Anchor and CTA Button */}
           <div className="hidden md:flex items-center space-x-3">
-            <div id="pullcord-anchor" className="w-8 h-8 flex items-center justify-center relative pointer-events-none" aria-hidden="true" />
             <Button 
               className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-medium shadow-sm transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] hover:shadow-md focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-darkblue-950"
               onClick={() => navigate('/contact')}
             >
               Get Started
             </Button>
+            <div id="pullcord-anchor" className="w-8 h-8 flex items-center justify-center relative pointer-events-none" aria-hidden="true" />
           </div>
 
           {/* Mobile Menu Button & Pull Cord Anchor */}
           <div className="md:hidden flex items-center space-x-2">
-            <div id="pullcord-anchor-mobile" className="w-8 h-8 flex items-center justify-center relative pointer-events-none" aria-hidden="true" />
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -393,6 +392,7 @@ export default function Navbar() {
                 <Menu className="block h-6 w-6" aria-hidden="true" />
               )}
             </button>
+            <div id="pullcord-anchor-mobile" className="w-8 h-8 flex items-center justify-center relative pointer-events-none" aria-hidden="true" />
           </div>
         </div>
       </div>
