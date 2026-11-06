@@ -676,3 +676,4 @@ export const InvestmentArcGallery: React.FC = () => {
 };
 
 export default InvestmentArcGallery;
+

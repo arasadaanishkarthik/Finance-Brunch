@@ -160,7 +160,8 @@ const InvestmentPlanning = () => {
   };
 
   const handleStillBuildingClick = (serviceName: string) => {
-    toast.info(`${serviceName} — We are still building`, {
+    toast({
+      title: `${serviceName} — We are still building`,
       description: "Our investment research and engineering team is actively building this service to institutional standards. It will be launched shortly.",
       duration: 5000,
     });
@@ -247,7 +248,7 @@ const InvestmentPlanning = () => {
       badge: "We are still building",
       isBuilding: true,
       icon: <Clock className="ml-2 h-4 w-4" />,
-      onClick: handleStillBuildingClick("Crypto Currency Investments"),
+      onClick: () => handleStillBuildingClick("Crypto Currency Investments"),
     },
   ];
 
