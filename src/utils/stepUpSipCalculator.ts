@@ -3,8 +3,8 @@
  *
  * Implements deterministic client-side Step-Up SIP calculations:
  * - The monthly contribution increases after every 12 monthly installments by annualStepUpPercentage.
- * - Nominal monthly rate: i = r / 12  (r = annual rate / 100)
- *   Matching Groww's Step-Up SIP calculator convention.
+ * - Effective monthly rate: i = (1 + r)^(1/12) - 1  (r = annual rate / 100)
+ *   Matching Groww's Step-Up SIP calculator convention (geometric compounding).
  * - Beginning-of-month contribution timing: balance = (balance + contribution) * (1 + i)
  * - Includes fixed SIP comparison with identical starting contribution and return assumptions.
  */
@@ -128,10 +128,11 @@ export function calculateStepUpSIP(inputs: StepUpSIPCalculatorInputs): StepUpSIP
   }
 
   const totalMonths = Math.round(investmentDurationYears * 12);
-  // Nominal monthly rate matching Groww's convention: r / 12
+  // Effective monthly rate matching Groww's convention: (1 + r)^(1/12) - 1
+  // e.g. 13% p.a. → (1.13)^(1/12) - 1 ≈ 0.010237 per month
   const monthlyRate = expectedAnnualReturn === 0
     ? 0
-    : expectedAnnualReturn / 100 / 12;
+    : Math.pow(1 + expectedAnnualReturn / 100, 1 / 12) - 1;
 
   let stepUpBalance = 0;
   let stepUpTotalInvested = 0;

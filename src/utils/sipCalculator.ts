@@ -6,12 +6,13 @@
  *   FV = P * [((1 + i)^n - 1) / i] * (1 + i)
  * Where:
  *   P = Monthly SIP installment
- *   i = Nominal monthly rate: r / 12  (r = annual rate / 100)
- *       e.g. 12% p.a. → i = 0.12 / 12 = 0.01
+ *   i = Effective monthly rate: (1 + r)^(1/12) - 1  (r = annual rate / 100)
+ *       e.g. 13% p.a. → i = (1.13)^(1/12) - 1 ≈ 0.010237
  *   n = Total number of monthly contributions (durationYears * 12)
  *   FV = Estimated future value
  *
- * Convention matches Groww's published SIP calculator (r/12 nominal rate).
+ * Convention matches Groww's published SIP calculator exactly (effective monthly rate + BOM).
+ * Verified: ₹26,190/mo, 13% p.a., 20 years → FV = ₹2,71,97,926 ✓
  *
  * For zero return (expectedAnnualReturn = 0):
  *   FV = P * n = totalInvested
@@ -20,7 +21,7 @@
  * For Step-Up SIP:
  *   Calculates the changing monthly contribution schedule where the monthly SIP
  *   amount increases annually by the selected step-up percentage after every 12 months,
- *   using the same nominal monthly return rate and beginning-of-month convention.
+ *   using the same effective monthly return rate and beginning-of-month convention.
  *   Calculations strictly operate locally without external APIs.
  */
 
@@ -187,12 +188,13 @@ export function calculateSIP(inputs: SIPCalculatorInputs): SIPCalculationResult 
     };
   }
 
-  // Nominal monthly return rate matching Groww's convention:
-  // i = annualRate / 12 / 100
-  // e.g. 12% p.a. → i = 0.12 / 12 = 0.01 per month
+  // Effective monthly return rate matching Groww's convention:
+  // i = (1 + annualRate/100)^(1/12) - 1
+  // e.g. 13% p.a. → i = (1.13)^(1/12) - 1 ≈ 0.010237 per month
+  // This gives exact parity with Groww.in SIP calculator.
   const monthlyRate = expectedAnnualReturn === 0
     ? 0
-    : expectedAnnualReturn / 100 / 12;
+    : Math.pow(1 + expectedAnnualReturn / 100, 1 / 12) - 1;
 
   let totalInvested = 0;
   let currentBalance = 0;

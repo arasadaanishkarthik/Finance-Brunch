@@ -99,7 +99,9 @@ export function calculateStepUpSWP(inputs: StepUpSWPInputs): StepUpSWPResult {
     };
   }
 
-  const monthlyRate = (Math.max(0, expectedAnnualReturn) / 100) / 12;
+  const monthlyRate = expectedAnnualReturn === 0
+    ? 0
+    : Math.pow(1 + Math.max(0, expectedAnnualReturn) / 100, 1 / 12) - 1;
   let currentBalance = initialCorpus;
   let totalActualWithdrawals = 0;
   let totalGrowthEarned = 0;
