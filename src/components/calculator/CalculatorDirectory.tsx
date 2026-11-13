@@ -15,8 +15,8 @@ import {
   Receipt,
   CandlestickChart,
   Calculator as CalcIcon,
+  ArrowUpRight,
 } from 'lucide-react';
-import { CalculatorArcGallery } from './CalculatorArcGallery';
 
 interface CalculatorDirectoryProps {
   onSelectCalculator: (slug: string) => void;
@@ -163,7 +163,7 @@ export const CalculatorDirectory: React.FC<CalculatorDirectoryProps> = ({
             <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <span>
                 {activeCategory === 'all'
-                  ? 'All Calculators Arc'
+                  ? 'All Calculators'
                   : CALCULATOR_CATEGORIES.find((c) => c.id === activeCategory)?.label}
               </span>
               <span className="text-xs sm:text-sm font-normal text-slate-500 dark:text-slate-400 font-mono">
@@ -171,15 +171,37 @@ export const CalculatorDirectory: React.FC<CalculatorDirectoryProps> = ({
               </span>
             </h3>
             <span className="text-xs text-slate-500 dark:text-slate-400 font-mono hidden sm:inline-block">
-              Scroll to explore • Click to calculate
+              Click to calculate
             </span>
           </div>
 
-          <CalculatorArcGallery
-            key={activeCategory + searchQuery}
-            calculators={filteredCalculators}
-            onSelectCalculator={onSelectCalculator}
-          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filteredCalculators.map((calc) => (
+              <button
+                key={calc.id}
+                onClick={() => onSelectCalculator(calc.slug)}
+                className="group text-left w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 hover:border-blue-400 dark:hover:border-cyan-500 hover:shadow-lg hover:shadow-blue-500/10 dark:hover:shadow-cyan-500/10 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-cyan-400"
+              >
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-cyan-400 border border-blue-100 dark:border-blue-900/50">
+                    {calc.categoryLabel}
+                  </span>
+                  <ArrowUpRight className="w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 shrink-0 transition-colors" />
+                </div>
+                <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-1 leading-tight group-hover:text-blue-600 dark:group-hover:text-cyan-300 transition-colors">
+                  {calc.name}
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                  {calc.shortDescription}
+                </p>
+                {calc.isPopular && (
+                  <span className="inline-block mt-3 text-[10px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                    ★ Popular
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>
