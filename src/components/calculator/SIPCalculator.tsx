@@ -182,35 +182,98 @@ export default function SIPCalculator({ className, showHeading = false }: SIPCal
   };
 
   const handleReturnChange = (valStr: string) => {
-    setReturnInputStr(valStr);
-    const num = parseFloat(valStr);
-
-    if (valStr.trim() === '' || isNaN(num)) {
-      setValidationErrors((prev) => ({ ...prev, returnRate: 'Expected return is required.' }));
+    if (valStr.trim() === '') {
+      setReturnInputStr('');
       setExpectedReturn(0);
-    } else if (num < 0.1 || num > 35) {
-      setValidationErrors((prev) => ({ ...prev, returnRate: 'Please choose an expected return between 1% and 35%.' }));
-      setExpectedReturn(Math.min(35, Math.max(0, num)));
-    } else {
+      setValidationErrors((prev) => ({ ...prev, returnRate: 'Expected return is required.' }));
+      return;
+    }
+
+    const num = parseFloat(valStr);
+    if (isNaN(num)) {
+      setReturnInputStr('');
+      setExpectedReturn(0);
+      setValidationErrors((prev) => ({ ...prev, returnRate: 'Expected return is required.' }));
+      return;
+    }
+
+    if (num < 0) {
+      setReturnInputStr('0');
+      setExpectedReturn(0);
       setValidationErrors((prev) => ({ ...prev, returnRate: undefined }));
+      return;
+    }
+
+    if (num > 35) {
+      // Strictly prevent values above 35%: clamp immediately
+      setReturnInputStr('35');
+      setExpectedReturn(35);
+      setValidationErrors((prev) => ({ ...prev, returnRate: undefined }));
+      return;
+    }
+
+    setReturnInputStr(valStr);
+    setExpectedReturn(num);
+    setValidationErrors((prev) => ({ ...prev, returnRate: undefined }));
+  };
+
+  const handleReturnBlur = () => {
+    const num = parseFloat(returnInputStr);
+    if (isNaN(num) || num < 1) {
+      setReturnInputStr('1');
+      setExpectedReturn(1);
+    } else if (num > 35) {
+      setReturnInputStr('35');
+      setExpectedReturn(35);
+    } else {
+      setReturnInputStr(num.toString());
       setExpectedReturn(num);
     }
+    setValidationErrors((prev) => ({ ...prev, returnRate: undefined }));
   };
 
   const handleDurationChange = (valStr: string) => {
-    setDurationInputStr(valStr);
-    const num = parseFloat(valStr);
-
-    if (valStr.trim() === '' || isNaN(num) || num <= 0) {
+    if (valStr.trim() === '') {
+      setDurationInputStr('');
+      setInvestmentDuration(1);
       setValidationErrors((prev) => ({ ...prev, duration: 'Duration must be at least 1 year.' }));
+      return;
+    }
+
+    const num = parseFloat(valStr);
+    if (isNaN(num) || num <= 0) {
+      setDurationInputStr('1');
+      setInvestmentDuration(1);
+      setValidationErrors((prev) => ({ ...prev, duration: undefined }));
+      return;
+    }
+
+    if (num > 40) {
+      // Strictly prevent values above 40: clamp immediately
+      setDurationInputStr('40');
+      setInvestmentDuration(40);
+      setValidationErrors((prev) => ({ ...prev, duration: undefined }));
+      return;
+    }
+
+    setDurationInputStr(valStr);
+    setInvestmentDuration(num);
+    setValidationErrors((prev) => ({ ...prev, duration: undefined }));
+  };
+
+  const handleDurationBlur = () => {
+    const num = parseFloat(durationInputStr);
+    if (isNaN(num) || num < 1) {
+      setDurationInputStr('1');
       setInvestmentDuration(1);
     } else if (num > 40) {
-      setValidationErrors((prev) => ({ ...prev, duration: 'Maximum duration supported is 40 years.' }));
+      setDurationInputStr('40');
       setInvestmentDuration(40);
     } else {
-      setValidationErrors((prev) => ({ ...prev, duration: undefined }));
+      setDurationInputStr(num.toString());
       setInvestmentDuration(num);
     }
+    setValidationErrors((prev) => ({ ...prev, duration: undefined }));
   };
 
   const handleStepUpChange = (valStr: string) => {
@@ -394,9 +457,13 @@ export default function SIPCalculator({ className, showHeading = false }: SIPCal
                   type="number"
                   step="0.1"
                   min="1"
-                  max="30"
+                  max="35"
                   value={returnInputStr}
                   onChange={(e) => handleReturnChange(e.target.value)}
+                  onBlur={handleReturnBlur}
+                  onKeyDown={(e) => {
+                    if (e.key === '-' || e.key === 'e') e.preventDefault();
+                  }}
                   className="pr-7 text-right font-bold text-gray-900 dark:text-white bg-gray-50/70 dark:bg-gray-800/80 border-gray-300 dark:border-gray-700 h-10 text-base focus-visible:ring-blue-500"
                   aria-label="Expected Annual Return Percentage"
                 />
@@ -407,7 +474,7 @@ export default function SIPCalculator({ className, showHeading = false }: SIPCal
             <Slider
               value={[expectedReturn]}
               min={1}
-              max={30}
+              max={35}
               step={0.5}
               onValueChange={(vals) => handleReturnSlider(vals[0])}
               className="py-1 cursor-pointer"
@@ -416,10 +483,9 @@ export default function SIPCalculator({ className, showHeading = false }: SIPCal
 
             <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 font-medium">
               <span>1%</span>
-              <span>8%</span>
               <span>12%</span>
-              <span>15%</span>
-              <span>30%</span>
+              <span>20%</span>
+              <span>35%</span>
             </div>
 
             {/* Quick Presets */}
@@ -472,10 +538,14 @@ export default function SIPCalculator({ className, showHeading = false }: SIPCal
                   id="sip-duration"
                   type="number"
                   min="1"
-                  max="35"
+                  max="40"
                   step="1"
                   value={durationInputStr}
                   onChange={(e) => handleDurationChange(e.target.value)}
+                  onBlur={handleDurationBlur}
+                  onKeyDown={(e) => {
+                    if (e.key === '-' || e.key === 'e' || e.key === '.') e.preventDefault();
+                  }}
                   className="pr-9 text-right font-bold text-gray-900 dark:text-white bg-gray-50/70 dark:bg-gray-800/80 border-gray-300 dark:border-gray-700 h-10 text-base focus-visible:ring-blue-500"
                   aria-label="Investment Duration in Years"
                 />
@@ -486,7 +556,7 @@ export default function SIPCalculator({ className, showHeading = false }: SIPCal
             <Slider
               value={[investmentDuration]}
               min={1}
-              max={35}
+              max={40}
               step={1}
               onValueChange={(vals) => handleDurationSlider(vals[0])}
               className="py-1 cursor-pointer"
@@ -495,10 +565,9 @@ export default function SIPCalculator({ className, showHeading = false }: SIPCal
 
             <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 font-medium">
               <span>1 Yr</span>
-              <span>5 Yrs</span>
               <span>10 Yrs</span>
-              <span>20 Yrs</span>
-              <span>35 Yrs</span>
+              <span>25 Yrs</span>
+              <span>40 Yrs</span>
             </div>
 
             {/* Quick Presets */}

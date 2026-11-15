@@ -114,8 +114,8 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     disclaimer: 'Equity and mutual fund returns are volatile and cannot be guaranteed.',
     fields: [
       { id: 'initialInvestment', label: 'Total Investment', defaultValue: 100000, min: 1000, max: 10000000, step: 5000, unit: '₹', isCurrency: true },
-      { id: 'expectedAnnualReturn', label: 'Expected Return Rate (p.a.)', defaultValue: 12, min: 1, max: 30, step: 0.5, unit: '%' },
-      { id: 'investmentDurationYears', label: 'Time Period', defaultValue: 10, min: 1, max: 40, step: 1, unit: 'Years' },
+      { id: 'expectedAnnualReturn', label: 'Expected Return Rate (p.a.)', defaultValue: 12, min: 1, max: 60, step: 0.5, unit: '%' },
+      { id: 'investmentDurationYears', label: 'Time Period', defaultValue: 10, min: 1, max: 100, step: 1, unit: 'Years' },
     ],
   },
   {
@@ -143,8 +143,8 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     fields: [
       { id: 'totalCorpus', label: 'Initial Corpus Amount', defaultValue: 5000000, min: 100000, max: 50000000, step: 50000, unit: '₹', isCurrency: true },
       { id: 'monthlyWithdrawal', label: 'Monthly Withdrawal', defaultValue: 35000, min: 1000, max: 500000, step: 1000, unit: '₹', isCurrency: true },
-      { id: 'expectedAnnualReturn', label: 'Expected Return Rate (p.a.)', defaultValue: 9, min: 1, max: 20, step: 0.5, unit: '%' },
-      { id: 'tenureYears', label: 'Withdrawal Period', defaultValue: 10, min: 1, max: 35, step: 1, unit: 'Years' },
+      { id: 'expectedAnnualReturn', label: 'Expected Return Rate (p.a.)', defaultValue: 9, min: 1, max: 30, step: 0.5, unit: '%' },
+      { id: 'tenureYears', label: 'Withdrawal Period', defaultValue: 10, min: 1, max: 60, step: 1, unit: 'Years' },
     ],
   },
   {
@@ -197,8 +197,8 @@ export const CALCULATOR_CATALOG: CalculatorMeta[] = [
     fields: [
       { id: 'monthlyInvestment', label: 'Initial Monthly Investment', defaultValue: 10000, min: 500, max: 1000000, step: 500, unit: '₹', isCurrency: true },
       { id: 'stepUpPercentage', label: 'Annual Step-Up', defaultValue: 10, min: 1, max: 50, step: 1, unit: '%' },
-      { id: 'expectedAnnualReturn', label: 'Expected Return Rate (p.a.)', defaultValue: 12, min: 1, max: 30, step: 0.5, unit: '%' },
-      { id: 'investmentDurationYears', label: 'Time Period', defaultValue: 10, min: 1, max: 40, step: 1, unit: 'Years' },
+      { id: 'expectedAnnualReturn', label: 'Expected Return Rate (p.a.)', defaultValue: 12, min: 1, max: 35, step: 0.5, unit: '%' },
+      { id: 'investmentDurationYears', label: 'Time Period', defaultValue: 10, min: 1, max: 55, step: 1, unit: 'Years' },
     ],
   },
   {

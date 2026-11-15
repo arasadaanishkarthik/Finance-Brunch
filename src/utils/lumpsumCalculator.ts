@@ -83,8 +83,8 @@ export function calculateLumpsum(inputs: LumpsumCalculatorInputs): LumpsumCalcul
     };
   }
 
-  // Prevent calculation overflow for unrealistic extremes (strictly capped at ₹100 Crore)
-  if (initialInvestment > MAX_INVESTMENT_AMOUNT || investmentDurationYears > 60 || expectedAnnualReturn > 100) {
+  // Prevent calculation overflow for unrealistic extremes (strictly capped at ₹100 Crore, 100 years)
+  if (initialInvestment > MAX_INVESTMENT_AMOUNT || investmentDurationYears > 100 || expectedAnnualReturn > 100) {
     return {
       initialInvestment,
       expectedAnnualReturn,

@@ -269,33 +269,105 @@ export default function SWPCalculator() {
   };
 
   const handleReturnChange = (valStr: string) => {
-    setReturnInputStr(valStr);
-    const num = parseFloat(valStr);
-    if (valStr.trim() === '' || isNaN(num)) {
-      setErrors((prev) => ({ ...prev, returnRate: 'Return rate is required.' }));
+    if (valStr.trim() === '') {
+      setReturnInputStr('');
       setExpectedReturn(0);
-    } else if (num < 0 || num > 30) {
-      setErrors((prev) => ({ ...prev, returnRate: 'Return rate must be between 0% and 30%.' }));
-      setExpectedReturn(Math.min(30, Math.max(0, num)));
-    } else {
+      setErrors((prev) => ({ ...prev, returnRate: 'Return rate is required.' }));
+      return;
+    }
+
+    const num = parseFloat(valStr);
+    if (isNaN(num)) {
+      setReturnInputStr('');
+      setExpectedReturn(0);
+      setErrors((prev) => ({ ...prev, returnRate: 'Return rate is required.' }));
+      return;
+    }
+
+    if (num < 0) {
+      setReturnInputStr('0');
+      setExpectedReturn(0);
       setErrors((prev) => ({ ...prev, returnRate: undefined }));
+      return;
+    }
+
+    if (num > 30) {
+      // Strictly prevent values above 30%: clamp immediately
+      setReturnInputStr('30');
+      setExpectedReturn(30);
+      setErrors((prev) => ({ ...prev, returnRate: undefined }));
+      return;
+    }
+
+    setReturnInputStr(valStr);
+    setExpectedReturn(num);
+    setErrors((prev) => ({ ...prev, returnRate: undefined }));
+  };
+
+  const handleReturnBlur = () => {
+    const num = parseFloat(returnInputStr);
+    if (isNaN(num) || num < 0) {
+      setReturnInputStr('0');
+      setExpectedReturn(0);
+    } else if (num > 30) {
+      setReturnInputStr('30');
+      setExpectedReturn(30);
+    } else {
+      setReturnInputStr(num.toString());
       setExpectedReturn(num);
     }
+    setErrors((prev) => ({ ...prev, returnRate: undefined }));
   };
 
   const handleDurationChange = (valStr: string) => {
-    setDurationInputStr(valStr);
-    const num = parseInt(valStr, 10);
-    if (valStr.trim() === '' || isNaN(num)) {
-      setErrors((prev) => ({ ...prev, duration: 'Duration is required.' }));
+    if (valStr.trim() === '') {
+      setDurationInputStr('');
       setWithdrawalDuration(1);
-    } else if (num < 1 || num > 35) {
-      setErrors((prev) => ({ ...prev, duration: 'Duration must be between 1 and 35 years.' }));
-      setWithdrawalDuration(Math.min(35, Math.max(1, num)));
-    } else {
+      setErrors((prev) => ({ ...prev, duration: 'Duration is required.' }));
+      return;
+    }
+
+    const num = parseInt(valStr, 10);
+    if (isNaN(num)) {
+      setDurationInputStr('');
+      setWithdrawalDuration(1);
+      setErrors((prev) => ({ ...prev, duration: 'Duration is required.' }));
+      return;
+    }
+
+    if (num < 1) {
+      setDurationInputStr('1');
+      setWithdrawalDuration(1);
       setErrors((prev) => ({ ...prev, duration: undefined }));
+      return;
+    }
+
+    if (num > 60) {
+      // Strictly prevent values above 60 years: clamp immediately
+      setDurationInputStr('60');
+      setWithdrawalDuration(60);
+      setErrors((prev) => ({ ...prev, duration: undefined }));
+      return;
+    }
+
+    setDurationInputStr(valStr);
+    setWithdrawalDuration(num);
+    setErrors((prev) => ({ ...prev, duration: undefined }));
+  };
+
+  const handleDurationBlur = () => {
+    const num = parseInt(durationInputStr, 10);
+    if (isNaN(num) || num < 1) {
+      setDurationInputStr('1');
+      setWithdrawalDuration(1);
+    } else if (num > 60) {
+      setDurationInputStr('60');
+      setWithdrawalDuration(60);
+    } else {
+      setDurationInputStr(num.toString());
       setWithdrawalDuration(num);
     }
+    setErrors((prev) => ({ ...prev, duration: undefined }));
   };
 
   const areaData = result.yearlySchedule.map((item) => ({
@@ -689,6 +761,10 @@ export default function SWPCalculator() {
                       max="30"
                       value={returnInputStr}
                       onChange={(e) => handleReturnChange(e.target.value)}
+                      onBlur={handleReturnBlur}
+                      onKeyDown={(e) => {
+                        if (e.key === '-' || e.key === 'e') e.preventDefault();
+                      }}
                       className="pr-6 text-right font-mono text-sm h-9 border-slate-200 dark:border-slate-700"
                     />
                     <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">%</span>
@@ -700,8 +776,9 @@ export default function SWPCalculator() {
                   max={30}
                   step={0.5}
                   onValueChange={(val) => {
-                    setExpectedReturn(val[0]);
-                    setReturnInputStr(val[0].toString());
+                    const clamped = Math.min(30, Math.max(0, val[0]));
+                    setExpectedReturn(clamped);
+                    setReturnInputStr(clamped.toString());
                     setErrors((prev) => ({ ...prev, returnRate: undefined }));
                   }}
                   className="py-1 cursor-pointer"
@@ -727,9 +804,14 @@ export default function SWPCalculator() {
                       id="swp-duration"
                       type="number"
                       min="1"
-                      max="35"
+                      max="60"
+                      step="1"
                       value={durationInputStr}
                       onChange={(e) => handleDurationChange(e.target.value)}
+                      onBlur={handleDurationBlur}
+                      onKeyDown={(e) => {
+                        if (e.key === '-' || e.key === 'e' || e.key === '.') e.preventDefault();
+                      }}
                       className="pr-6 text-right font-mono text-sm h-9 border-slate-200 dark:border-slate-700"
                     />
                     <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">Yr</span>
@@ -738,20 +820,20 @@ export default function SWPCalculator() {
                 <Slider
                   value={[withdrawalDuration]}
                   min={1}
-                  max={35}
+                  max={60}
                   step={1}
                   onValueChange={(val) => {
-                    setWithdrawalDuration(val[0]);
-                    setDurationInputStr(val[0].toString());
+                    const clamped = Math.min(60, Math.max(1, val[0]));
+                    setWithdrawalDuration(clamped);
+                    setDurationInputStr(clamped.toString());
                     setErrors((prev) => ({ ...prev, duration: undefined }));
                   }}
                   className="py-1 cursor-pointer"
                 />
                 <div className="flex justify-between text-[11px] font-mono text-slate-400">
                   <span>1 Year</span>
-                  <span>10 Years</span>
-                  <span>25 Years</span>
-                  <span>35 Years</span>
+                  <span>30 Years</span>
+                  <span>60 Years</span>
                 </div>
                 {errors.duration && <p className="text-xs text-rose-500">{errors.duration}</p>}
               </div>

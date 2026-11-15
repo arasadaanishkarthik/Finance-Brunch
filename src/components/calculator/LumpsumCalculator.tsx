@@ -158,33 +158,107 @@ export default function LumpsumCalculator() {
   };
 
   const handleReturnChange = (valStr: string) => {
-    setReturnInputStr(valStr);
-    const num = parseFloat(valStr);
-    if (valStr.trim() === '' || isNaN(num)) {
-      setErrors((prev) => ({ ...prev, returnRate: 'Return rate is required.' }));
+    if (valStr.trim() === '') {
+      setReturnInputStr('');
       setExpectedReturn(0);
-    } else if (num < 0 || num > 35) {
-      setErrors((prev) => ({ ...prev, returnRate: 'Return rate must be between 0% and 35%.' }));
-      setExpectedReturn(Math.min(35, Math.max(0, num)));
-    } else {
+      setErrors((prev) => ({ ...prev, returnRate: 'Return rate is required.' }));
+      return;
+    }
+
+    const num = parseFloat(valStr);
+    if (isNaN(num)) {
+      setReturnInputStr('');
+      setExpectedReturn(0);
+      setErrors((prev) => ({ ...prev, returnRate: 'Return rate is required.' }));
+      return;
+    }
+
+    if (num < 0) {
+      setReturnInputStr('0');
+      setExpectedReturn(0);
       setErrors((prev) => ({ ...prev, returnRate: undefined }));
+      return;
+    }
+
+    if (num > 60) {
+      // Strictly prevent values above 60%: clamp immediately
+      setReturnInputStr('60');
+      setExpectedReturn(60);
+      setErrors((prev) => ({ ...prev, returnRate: undefined }));
+      return;
+    }
+
+    // Valid value between 0 and 60
+    setReturnInputStr(valStr);
+    setExpectedReturn(num);
+    setErrors((prev) => ({ ...prev, returnRate: undefined }));
+  };
+
+  const handleReturnBlur = () => {
+    const num = parseFloat(returnInputStr);
+    if (isNaN(num) || num < 1) {
+      setReturnInputStr('1');
+      setExpectedReturn(1);
+    } else if (num > 60) {
+      setReturnInputStr('60');
+      setExpectedReturn(60);
+    } else {
+      setReturnInputStr(num.toString());
       setExpectedReturn(num);
     }
+    setErrors((prev) => ({ ...prev, returnRate: undefined }));
   };
 
   const handleDurationChange = (valStr: string) => {
-    setDurationInputStr(valStr);
-    const num = parseInt(valStr, 10);
-    if (valStr.trim() === '' || isNaN(num)) {
-      setErrors((prev) => ({ ...prev, duration: 'Duration is required.' }));
+    if (valStr.trim() === '') {
+      setDurationInputStr('');
       setInvestmentDuration(1);
-    } else if (num < 1 || num > 40) {
-      setErrors((prev) => ({ ...prev, duration: 'Duration must be between 1 and 40 years.' }));
-      setInvestmentDuration(Math.min(40, Math.max(1, num)));
-    } else {
+      setErrors((prev) => ({ ...prev, duration: 'Duration is required.' }));
+      return;
+    }
+
+    const num = parseInt(valStr, 10);
+    if (isNaN(num)) {
+      setDurationInputStr('');
+      setInvestmentDuration(1);
+      setErrors((prev) => ({ ...prev, duration: 'Duration is required.' }));
+      return;
+    }
+
+    if (num < 1) {
+      setDurationInputStr('1');
+      setInvestmentDuration(1);
       setErrors((prev) => ({ ...prev, duration: undefined }));
+      return;
+    }
+
+    if (num > 100) {
+      // Strictly prevent values above 100 years: clamp immediately
+      setDurationInputStr('100');
+      setInvestmentDuration(100);
+      setErrors((prev) => ({ ...prev, duration: undefined }));
+      return;
+    }
+
+    // Valid duration between 1 and 100 years
+    setDurationInputStr(valStr);
+    setInvestmentDuration(num);
+    setErrors((prev) => ({ ...prev, duration: undefined }));
+  };
+
+  const handleDurationBlur = () => {
+    const num = parseInt(durationInputStr, 10);
+    if (isNaN(num) || num < 1) {
+      setDurationInputStr('1');
+      setInvestmentDuration(1);
+    } else if (num > 100) {
+      setDurationInputStr('100');
+      setInvestmentDuration(100);
+    } else {
+      setDurationInputStr(num.toString());
       setInvestmentDuration(num);
     }
+    setErrors((prev) => ({ ...prev, duration: undefined }));
   };
 
   const pieData = [
@@ -294,9 +368,15 @@ export default function LumpsumCalculator() {
                     <Input
                       id="lumpsum-return"
                       type="number"
+                      min="1"
+                      max="60"
                       step="0.5"
                       value={returnInputStr}
                       onChange={(e) => handleReturnChange(e.target.value)}
+                      onBlur={handleReturnBlur}
+                      onKeyDown={(e) => {
+                        if (e.key === '-' || e.key === 'e') e.preventDefault();
+                      }}
                       className="pr-6 text-right font-mono text-sm h-9 border-slate-200 dark:border-slate-700"
                     />
                     <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 select-none">%</span>
@@ -305,19 +385,20 @@ export default function LumpsumCalculator() {
                 <Slider
                   value={[expectedReturn]}
                   min={1}
-                  max={30}
+                  max={60}
                   step={0.5}
                   onValueChange={(val) => {
-                    setExpectedReturn(val[0]);
-                    setReturnInputStr(val[0].toString());
+                    const clamped = Math.min(60, Math.max(1, val[0]));
+                    setExpectedReturn(clamped);
+                    setReturnInputStr(clamped.toString());
                     setErrors((prev) => ({ ...prev, returnRate: undefined }));
                   }}
                   className="py-1"
                 />
                 <div className="flex justify-between text-[11px] font-mono text-slate-400">
                   <span>1%</span>
-                  <span>15%</span>
                   <span>30%</span>
+                  <span>60%</span>
                 </div>
                 {errors.returnRate && <p className="text-xs text-rose-500">{errors.returnRate}</p>}
               </div>
@@ -333,8 +414,15 @@ export default function LumpsumCalculator() {
                     <Input
                       id="lumpsum-duration"
                       type="number"
+                      min="1"
+                      max="100"
+                      step="1"
                       value={durationInputStr}
                       onChange={(e) => handleDurationChange(e.target.value)}
+                      onBlur={handleDurationBlur}
+                      onKeyDown={(e) => {
+                        if (e.key === '-' || e.key === 'e' || e.key === '.') e.preventDefault();
+                      }}
                       className="pr-8 text-right font-mono text-sm h-9 border-slate-200 dark:border-slate-700"
                     />
                     <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 select-none">Yr</span>
@@ -343,19 +431,20 @@ export default function LumpsumCalculator() {
                 <Slider
                   value={[investmentDuration]}
                   min={1}
-                  max={35}
+                  max={100}
                   step={1}
                   onValueChange={(val) => {
-                    setInvestmentDuration(val[0]);
-                    setDurationInputStr(val[0].toString());
+                    const clamped = Math.min(100, Math.max(1, val[0]));
+                    setInvestmentDuration(clamped);
+                    setDurationInputStr(clamped.toString());
                     setErrors((prev) => ({ ...prev, duration: undefined }));
                   }}
                   className="py-1"
                 />
                 <div className="flex justify-between text-[11px] font-mono text-slate-400">
                   <span>1 Year</span>
-                  <span>15 Years</span>
-                  <span>35 Years</span>
+                  <span>50 Years</span>
+                  <span>100 Years</span>
                 </div>
                 {errors.duration && <p className="text-xs text-rose-500">{errors.duration}</p>}
               </div>

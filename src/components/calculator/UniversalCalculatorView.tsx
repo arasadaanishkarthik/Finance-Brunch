@@ -124,16 +124,24 @@ export const UniversalCalculatorView: React.FC<UniversalCalculatorViewProps> = (
       return;
     }
 
-    // Range validation
-    if (num < field.min && !field.isOptional) {
+    // Range validation & clamping
+    let effectiveNum = num;
+    if (num > field.max) {
+      // Prevent input from exceeding field.max: clamp immediately
+      effectiveNum = field.max;
+      setRawInputs((prev) => ({
+        ...prev,
+        [field.id]: field.isCurrency ? effectiveNum.toLocaleString('en-IN') : String(effectiveNum),
+      }));
+      setValidationErrors((prev) => {
+        const next = { ...prev };
+        delete next[field.id];
+        return next;
+      });
+    } else if (num < field.min && !field.isOptional) {
       setValidationErrors((prev) => ({
         ...prev,
         [field.id]: `Minimum is ${field.isCurrency ? formatINR(field.min) : `${field.min} ${field.unit}`}`,
-      }));
-    } else if (num > field.max) {
-      setValidationErrors((prev) => ({
-        ...prev,
-        [field.id]: `Maximum is ${field.isCurrency ? formatINR(field.max) : `${field.max} ${field.unit}`}`,
       }));
     } else {
       setValidationErrors((prev) => {
@@ -145,7 +153,7 @@ export const UniversalCalculatorView: React.FC<UniversalCalculatorViewProps> = (
 
     setInputs((prev) => ({
       ...prev,
-      [field.id]: num,
+      [field.id]: effectiveNum,
     }));
   };
 

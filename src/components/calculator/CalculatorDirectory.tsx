@@ -175,32 +175,139 @@ export const CalculatorDirectory: React.FC<CalculatorDirectoryProps> = ({
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredCalculators.map((calc) => (
-              <button
-                key={calc.id}
-                onClick={() => onSelectCalculator(calc.slug)}
-                className="group text-left w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 hover:border-blue-400 dark:hover:border-cyan-500 hover:shadow-lg hover:shadow-blue-500/10 dark:hover:shadow-cyan-500/10 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-cyan-400"
-              >
-                <div className="flex items-start justify-between gap-2 mb-3">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-cyan-400 border border-blue-100 dark:border-blue-900/50">
-                    {calc.categoryLabel}
-                  </span>
-                  <ArrowUpRight className="w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-cyan-400 shrink-0 transition-colors" />
-                </div>
-                <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-1 leading-tight group-hover:text-blue-600 dark:group-hover:text-cyan-300 transition-colors">
-                  {calc.name}
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
-                  {calc.shortDescription}
-                </p>
-                {calc.isPopular && (
-                  <span className="inline-block mt-3 text-[10px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                    ★ Popular
-                  </span>
-                )}
-              </button>
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4.5 sm:gap-5">
+            {filteredCalculators.map((calc) => {
+              // Category theme styling
+              const isGov = calc.category === 'government';
+              const isLoan = calc.category === 'loans' || calc.category === 'loans-tax-salary';
+              const isTax = calc.category === 'tax';
+              const isTrading = calc.category === 'trading';
+
+              const accentBorder = isGov
+                ? 'group-hover:border-emerald-500/60 dark:group-hover:border-emerald-400/60'
+                : isLoan
+                ? 'group-hover:border-amber-500/60 dark:group-hover:border-amber-400/60'
+                : isTax
+                ? 'group-hover:border-purple-500/60 dark:group-hover:border-purple-400/60'
+                : isTrading
+                ? 'group-hover:border-rose-500/60 dark:group-hover:border-rose-400/60'
+                : 'group-hover:border-blue-500/60 dark:group-hover:border-cyan-400/60';
+
+              const accentShadow = isGov
+                ? 'group-hover:shadow-emerald-500/10'
+                : isLoan
+                ? 'group-hover:shadow-amber-500/10'
+                : isTax
+                ? 'group-hover:shadow-purple-500/10'
+                : isTrading
+                ? 'group-hover:shadow-rose-500/10'
+                : 'group-hover:shadow-blue-500/10';
+
+              const topBarGradient = isGov
+                ? 'from-emerald-500 via-teal-400 to-emerald-600'
+                : isLoan
+                ? 'from-amber-500 via-orange-400 to-amber-600'
+                : isTax
+                ? 'from-purple-500 via-indigo-400 to-purple-600'
+                : isTrading
+                ? 'from-rose-500 via-pink-400 to-rose-600'
+                : 'from-blue-600 via-cyan-400 to-blue-500';
+
+              const badgeStyle = isGov
+                ? 'bg-emerald-50/90 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200/80 dark:border-emerald-800/60'
+                : isLoan
+                ? 'bg-amber-50/90 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200/80 dark:border-amber-800/60'
+                : isTax
+                ? 'bg-purple-50/90 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200/80 dark:border-purple-800/60'
+                : isTrading
+                ? 'bg-rose-50/90 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200/80 dark:border-rose-800/60'
+                : 'bg-blue-50/90 dark:bg-blue-950/40 text-blue-700 dark:text-cyan-300 border-blue-200/80 dark:border-blue-800/60';
+
+              const hoverTextColor = isGov
+                ? 'group-hover:text-emerald-600 dark:group-hover:text-emerald-400'
+                : isLoan
+                ? 'group-hover:text-amber-600 dark:group-hover:text-amber-400'
+                : isTax
+                ? 'group-hover:text-purple-600 dark:group-hover:text-purple-400'
+                : isTrading
+                ? 'group-hover:text-rose-600 dark:group-hover:text-rose-400'
+                : 'group-hover:text-blue-600 dark:group-hover:text-cyan-400';
+
+              const arrowBg = isGov
+                ? 'group-hover:bg-emerald-500/15 group-hover:text-emerald-600 dark:group-hover:text-emerald-400'
+                : isLoan
+                ? 'group-hover:bg-amber-500/15 group-hover:text-amber-600 dark:group-hover:text-amber-400'
+                : isTax
+                ? 'group-hover:bg-purple-500/15 group-hover:text-purple-600 dark:group-hover:text-purple-400'
+                : isTrading
+                ? 'group-hover:bg-rose-500/15 group-hover:text-rose-600 dark:group-hover:text-rose-400'
+                : 'group-hover:bg-blue-500/15 group-hover:text-blue-600 dark:group-hover:text-cyan-400';
+
+              return (
+                <button
+                  key={calc.id}
+                  onClick={() => onSelectCalculator(calc.slug)}
+                  className={`group relative text-left w-full flex flex-col justify-between bg-white/95 dark:bg-slate-900/90 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 shadow-xs hover:shadow-xl ${accentBorder} ${accentShadow} hover:-translate-y-1 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-cyan-400 overflow-hidden cursor-pointer`}
+                >
+                  {/* Top colored accent line with smooth expansion on hover */}
+                  <div
+                    className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${topBarGradient} opacity-60 group-hover:opacity-100 group-hover:h-1.5 transition-all duration-300`}
+                  />
+
+                  {/* Upper Content */}
+                  <div className="space-y-3 pt-1">
+                    {/* Header Row: Category Badge + Arrow Icon */}
+                    <div className="flex items-center justify-between gap-2">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold border ${badgeStyle} transition-colors`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />
+                        <span className="truncate max-w-[170px]">{calc.categoryLabel}</span>
+                      </span>
+
+                      <div
+                        className={`w-7 h-7 rounded-lg bg-slate-100/80 dark:bg-slate-800/80 flex items-center justify-center text-slate-400 dark:text-slate-500 ${arrowBg} transition-all duration-200 shrink-0 group-hover:rotate-12`}
+                      >
+                        <ArrowUpRight className="w-4 h-4" />
+                      </div>
+                    </div>
+
+                    {/* Calculator Title */}
+                    <h4
+                      className={`text-base font-bold text-slate-900 dark:text-white leading-snug ${hoverTextColor} transition-colors duration-200`}
+                    >
+                      {calc.name}
+                    </h4>
+
+                    {/* Short Description */}
+                    <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                      {calc.shortDescription}
+                    </p>
+                  </div>
+
+                  {/* Card Footer: Popular Badge + Action Cue */}
+                  <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/70">
+                    {calc.isPopular ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-gradient-to-r from-amber-500/15 to-yellow-500/15 text-amber-700 dark:text-amber-300 border border-amber-300/60 dark:border-amber-500/40 shadow-2xs">
+                        <span>★</span>
+                        <span>Popular</span>
+                      </span>
+                    ) : (
+                      <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500">
+                        {calc.formula.length > 22 ? calc.formula.slice(0, 22) + '...' : calc.formula}
+                      </span>
+                    )}
+
+                    <span
+                      className={`text-xs font-semibold text-slate-400 dark:text-slate-500 ${hoverTextColor} group-hover:translate-x-0.5 transition-all duration-200 flex items-center gap-1`}
+                    >
+                      <span>Calculate</span>
+                      <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}

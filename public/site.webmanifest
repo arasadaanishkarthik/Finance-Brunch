@@ -1,0 +1,22 @@
+{
+  "name": "Finance Brunch",
+  "short_name": "Finance Brunch",
+  "description": "Financial Advisory, Wealth & Planning",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080e1e",
+  "theme_color": "#080e1e",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "206x156",
+      "type": "image/png"
+    }
+  ]
+}

@@ -50,3 +50,13 @@ export const DEFAULT_RETURN_RATE = 12;
 export const MIN_DURATION_YEARS = 1;
 export const MAX_DURATION_YEARS = 40;
 export const DEFAULT_DURATION_YEARS = 10;
+
+// Specific Maximum Limits for Extended Calculators
+export const MAX_STEPUP_RETURN_RATE = 35;
+export const MAX_STEPUP_DURATION_YEARS = 55;
+
+export const MAX_LUMPSUM_RETURN_RATE = 60;
+export const MAX_LUMPSUM_DURATION_YEARS = 100;
+
+export const MAX_SWP_RETURN_RATE = 30;
+export const MAX_SWP_DURATION_YEARS = 60;

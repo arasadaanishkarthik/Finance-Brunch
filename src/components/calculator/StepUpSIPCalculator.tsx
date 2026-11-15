@@ -164,48 +164,157 @@ export default function StepUpSIPCalculator() {
   };
 
   const handleReturnChange = (valStr: string) => {
-    setReturnInputStr(valStr);
-    const num = parseFloat(valStr);
-    if (valStr.trim() === '' || isNaN(num)) {
-      setErrors((prev) => ({ ...prev, returnRate: 'Return rate is required.' }));
+    if (valStr.trim() === '') {
+      setReturnInputStr('');
       setExpectedReturn(0);
-    } else if (num < 0 || num > 35) {
-      setErrors((prev) => ({ ...prev, returnRate: 'Return rate must be between 0% and 35%.' }));
-      setExpectedReturn(Math.min(35, Math.max(0, num)));
-    } else {
+      setErrors((prev) => ({ ...prev, returnRate: 'Return rate is required.' }));
+      return;
+    }
+
+    const num = parseFloat(valStr);
+    if (isNaN(num)) {
+      setReturnInputStr('');
+      setExpectedReturn(0);
+      setErrors((prev) => ({ ...prev, returnRate: 'Return rate is required.' }));
+      return;
+    }
+
+    if (num < 0) {
+      setReturnInputStr('0');
+      setExpectedReturn(0);
       setErrors((prev) => ({ ...prev, returnRate: undefined }));
+      return;
+    }
+
+    if (num > 35) {
+      // Strictly prevent values above 35%: clamp immediately
+      setReturnInputStr('35');
+      setExpectedReturn(35);
+      setErrors((prev) => ({ ...prev, returnRate: undefined }));
+      return;
+    }
+
+    // Valid value between 0 and 35
+    setReturnInputStr(valStr);
+    setExpectedReturn(num);
+    setErrors((prev) => ({ ...prev, returnRate: undefined }));
+  };
+
+  const handleReturnBlur = () => {
+    const num = parseFloat(returnInputStr);
+    if (isNaN(num) || num < 1) {
+      setReturnInputStr('1');
+      setExpectedReturn(1);
+    } else if (num > 35) {
+      setReturnInputStr('35');
+      setExpectedReturn(35);
+    } else {
+      setReturnInputStr(num.toString());
       setExpectedReturn(num);
     }
+    setErrors((prev) => ({ ...prev, returnRate: undefined }));
   };
 
   const handleDurationChange = (valStr: string) => {
-    setDurationInputStr(valStr);
-    const num = parseInt(valStr, 10);
-    if (valStr.trim() === '' || isNaN(num)) {
-      setErrors((prev) => ({ ...prev, duration: 'Duration is required.' }));
+    if (valStr.trim() === '') {
+      setDurationInputStr('');
       setInvestmentDuration(1);
-    } else if (num < 1 || num > 35) {
-      setErrors((prev) => ({ ...prev, duration: 'Duration must be between 1 and 35 years.' }));
-      setInvestmentDuration(Math.min(35, Math.max(1, num)));
-    } else {
+      setErrors((prev) => ({ ...prev, duration: 'Duration is required.' }));
+      return;
+    }
+
+    const num = parseInt(valStr, 10);
+    if (isNaN(num)) {
+      setDurationInputStr('');
+      setInvestmentDuration(1);
+      setErrors((prev) => ({ ...prev, duration: 'Duration is required.' }));
+      return;
+    }
+
+    if (num < 1) {
+      setDurationInputStr('1');
+      setInvestmentDuration(1);
       setErrors((prev) => ({ ...prev, duration: undefined }));
+      return;
+    }
+
+    if (num > 55) {
+      // Strictly prevent values above 55 years: clamp immediately
+      setDurationInputStr('55');
+      setInvestmentDuration(55);
+      setErrors((prev) => ({ ...prev, duration: undefined }));
+      return;
+    }
+
+    // Valid duration between 1 and 55 years
+    setDurationInputStr(valStr);
+    setInvestmentDuration(num);
+    setErrors((prev) => ({ ...prev, duration: undefined }));
+  };
+
+  const handleDurationBlur = () => {
+    const num = parseInt(durationInputStr, 10);
+    if (isNaN(num) || num < 1) {
+      setDurationInputStr('1');
+      setInvestmentDuration(1);
+    } else if (num > 55) {
+      setDurationInputStr('55');
+      setInvestmentDuration(55);
+    } else {
+      setDurationInputStr(num.toString());
       setInvestmentDuration(num);
     }
+    setErrors((prev) => ({ ...prev, duration: undefined }));
   };
 
   const handleStepUpChange = (valStr: string) => {
-    setStepUpInputStr(valStr);
-    const num = parseFloat(valStr);
-    if (valStr.trim() === '' || isNaN(num)) {
-      setErrors((prev) => ({ ...prev, stepUp: 'Step-up rate is required.' }));
+    if (valStr.trim() === '') {
+      setStepUpInputStr('');
       setStepUpPercentage(0);
-    } else if (num < 0 || num > 50) {
-      setErrors((prev) => ({ ...prev, stepUp: 'Annual step-up must be between 0% and 50%.' }));
-      setStepUpPercentage(Math.min(50, Math.max(0, num)));
-    } else {
+      setErrors((prev) => ({ ...prev, stepUp: 'Step-up rate is required.' }));
+      return;
+    }
+
+    const num = parseFloat(valStr);
+    if (isNaN(num)) {
+      setStepUpInputStr('');
+      setStepUpPercentage(0);
+      setErrors((prev) => ({ ...prev, stepUp: 'Step-up rate is required.' }));
+      return;
+    }
+
+    if (num < 0) {
+      setStepUpInputStr('0');
+      setStepUpPercentage(0);
       setErrors((prev) => ({ ...prev, stepUp: undefined }));
+      return;
+    }
+
+    if (num > 50) {
+      setStepUpInputStr('50');
+      setStepUpPercentage(50);
+      setErrors((prev) => ({ ...prev, stepUp: undefined }));
+      return;
+    }
+
+    setStepUpInputStr(valStr);
+    setStepUpPercentage(num);
+    setErrors((prev) => ({ ...prev, stepUp: undefined }));
+  };
+
+  const handleStepUpBlur = () => {
+    const num = parseFloat(stepUpInputStr);
+    if (isNaN(num) || num < 1) {
+      setStepUpInputStr('1');
+      setStepUpPercentage(1);
+    } else if (num > 50) {
+      setStepUpInputStr('50');
+      setStepUpPercentage(50);
+    } else {
+      setStepUpInputStr(num.toString());
       setStepUpPercentage(num);
     }
+    setErrors((prev) => ({ ...prev, stepUp: undefined }));
   };
 
   const scheduleBarData = result.annualSchedule.map((item) => ({
@@ -314,9 +423,15 @@ export default function StepUpSIPCalculator() {
                     <Input
                       id="stepup-rate"
                       type="number"
+                      min="1"
+                      max="50"
                       step="1"
                       value={stepUpInputStr}
                       onChange={(e) => handleStepUpChange(e.target.value)}
+                      onBlur={handleStepUpBlur}
+                      onKeyDown={(e) => {
+                        if (e.key === '-' || e.key === 'e') e.preventDefault();
+                      }}
                       className="pr-6 text-right font-mono text-sm h-9 border-slate-200 dark:border-slate-700"
                     />
                     <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 select-none">%</span>
@@ -325,19 +440,20 @@ export default function StepUpSIPCalculator() {
                 <Slider
                   value={[stepUpPercentage]}
                   min={1}
-                  max={30}
+                  max={50}
                   step={1}
                   onValueChange={(val) => {
-                    setStepUpPercentage(val[0]);
-                    setStepUpInputStr(val[0].toString());
+                    const clamped = Math.min(50, Math.max(1, val[0]));
+                    setStepUpPercentage(clamped);
+                    setStepUpInputStr(clamped.toString());
                     setErrors((prev) => ({ ...prev, stepUp: undefined }));
                   }}
                   className="py-1"
                 />
                 <div className="flex justify-between text-[11px] font-mono text-slate-400">
                   <span>1%</span>
-                  <span>10% (Default)</span>
-                  <span>30%</span>
+                  <span>25%</span>
+                  <span>50%</span>
                 </div>
                 {errors.stepUp && <p className="text-xs text-rose-500">{errors.stepUp}</p>}
               </div>
@@ -353,9 +469,15 @@ export default function StepUpSIPCalculator() {
                     <Input
                       id="stepup-return"
                       type="number"
+                      min="1"
+                      max="35"
                       step="0.5"
                       value={returnInputStr}
                       onChange={(e) => handleReturnChange(e.target.value)}
+                      onBlur={handleReturnBlur}
+                      onKeyDown={(e) => {
+                        if (e.key === '-' || e.key === 'e') e.preventDefault();
+                      }}
                       className="pr-6 text-right font-mono text-sm h-9 border-slate-200 dark:border-slate-700"
                     />
                     <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 select-none">%</span>
@@ -364,11 +486,12 @@ export default function StepUpSIPCalculator() {
                 <Slider
                   value={[expectedReturn]}
                   min={1}
-                  max={30}
+                  max={35}
                   step={0.5}
                   onValueChange={(val) => {
-                    setExpectedReturn(val[0]);
-                    setReturnInputStr(val[0].toString());
+                    const clamped = Math.min(35, Math.max(1, val[0]));
+                    setExpectedReturn(clamped);
+                    setReturnInputStr(clamped.toString());
                     setErrors((prev) => ({ ...prev, returnRate: undefined }));
                   }}
                   className="py-1"
@@ -376,7 +499,7 @@ export default function StepUpSIPCalculator() {
                 <div className="flex justify-between text-[11px] font-mono text-slate-400">
                   <span>1%</span>
                   <span>15%</span>
-                  <span>30%</span>
+                  <span>35%</span>
                 </div>
                 {errors.returnRate && <p className="text-xs text-rose-500">{errors.returnRate}</p>}
               </div>
@@ -392,8 +515,15 @@ export default function StepUpSIPCalculator() {
                     <Input
                       id="stepup-duration"
                       type="number"
+                      min="1"
+                      max="55"
+                      step="1"
                       value={durationInputStr}
                       onChange={(e) => handleDurationChange(e.target.value)}
+                      onBlur={handleDurationBlur}
+                      onKeyDown={(e) => {
+                        if (e.key === '-' || e.key === 'e' || e.key === '.') e.preventDefault();
+                      }}
                       className="pr-8 text-right font-mono text-sm h-9 border-slate-200 dark:border-slate-700"
                     />
                     <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 select-none">Yr</span>
@@ -402,19 +532,20 @@ export default function StepUpSIPCalculator() {
                 <Slider
                   value={[investmentDuration]}
                   min={1}
-                  max={35}
+                  max={55}
                   step={1}
                   onValueChange={(val) => {
-                    setInvestmentDuration(val[0]);
-                    setDurationInputStr(val[0].toString());
+                    const clamped = Math.min(55, Math.max(1, val[0]));
+                    setInvestmentDuration(clamped);
+                    setDurationInputStr(clamped.toString());
                     setErrors((prev) => ({ ...prev, duration: undefined }));
                   }}
                   className="py-1"
                 />
                 <div className="flex justify-between text-[11px] font-mono text-slate-400">
                   <span>1 Year</span>
-                  <span>15 Years</span>
-                  <span>35 Years</span>
+                  <span>25 Years</span>
+                  <span>55 Years</span>
                 </div>
                 {errors.duration && <p className="text-xs text-rose-500">{errors.duration}</p>}
               </div>
