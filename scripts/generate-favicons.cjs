@@ -68,3 +68,4 @@ icoHeader.writeUInt32LE(22, 18); // offset where PNG starts
 const validIcoBuf = Buffer.concat([icoHeader, symbolBuf]);
 fs.writeFileSync('public/favicon.ico', validIcoBuf);
 console.log('✓ Created valid public/favicon.ico (size:', validIcoBuf.length, 'bytes)');
+

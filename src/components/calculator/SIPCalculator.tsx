@@ -49,6 +49,7 @@ import {
   SIP_MONTHLY_SCALE,
 } from '@/utils/sliderScaleUtils';
 import { VpfVsPpfComparison } from './VpfVsPpfComparison';
+import { SliderTickMarks } from './SliderTickMarks';
 import { cn } from '@/lib/utils';
 
 interface SIPCalculatorProps {
@@ -404,11 +405,17 @@ export default function SIPCalculator({ className, showHeading = false }: SIPCal
               aria-label="Monthly Investment Slider"
             />
 
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 font-medium">
-              {SIP_MONTHLY_SCALE.labels.map((item, idx) => (
-                <span key={idx}>{item.label}</span>
-              ))}
-            </div>
+            <SliderTickMarks
+              min={0}
+              max={100}
+              currentValue={valueToSliderPos(monthlyInvestment, SIP_MONTHLY_SCALE)}
+              ticks={SIP_MONTHLY_SCALE.labels.map((item) => ({
+                percent: item.percent,
+                label: item.label,
+                value: sliderPosToValue(item.percent, SIP_MONTHLY_SCALE),
+              }))}
+              onSelect={(val) => handleMonthlySlider(val)}
+            />
 
             {/* Quick preset buttons */}
             <div className="flex flex-wrap gap-1.5 pt-1">
@@ -481,12 +488,19 @@ export default function SIPCalculator({ className, showHeading = false }: SIPCal
               aria-label="Expected Return Slider"
             />
 
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 font-medium">
-              <span>1%</span>
-              <span>12%</span>
-              <span>20%</span>
-              <span>35%</span>
-            </div>
+            <SliderTickMarks
+              min={1}
+              max={35}
+              currentValue={expectedReturn}
+              ticks={[
+                { value: 1, label: '1%' },
+                { value: 12, label: '12%' },
+                { value: 15, label: '15%' },
+                { value: 20, label: '20%' },
+                { value: 35, label: '35%' },
+              ]}
+              onSelect={(val) => handleReturnSlider(val)}
+            />
 
             {/* Quick Presets */}
             <div className="flex gap-2 pt-1">
@@ -563,12 +577,18 @@ export default function SIPCalculator({ className, showHeading = false }: SIPCal
               aria-label="Investment Duration Slider"
             />
 
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 font-medium">
-              <span>1 Yr</span>
-              <span>10 Yrs</span>
-              <span>25 Yrs</span>
-              <span>40 Yrs</span>
-            </div>
+            <SliderTickMarks
+              min={1}
+              max={40}
+              currentValue={investmentDuration}
+              ticks={[
+                { value: 1, label: '1 Yr' },
+                { value: 10, label: '10 Yrs' },
+                { value: 25, label: '25 Yrs' },
+                { value: 40, label: '40 Yrs' },
+              ]}
+              onSelect={(val) => handleDurationSlider(val)}
+            />
 
             {/* Quick Presets */}
             <div className="flex gap-2 pt-1">

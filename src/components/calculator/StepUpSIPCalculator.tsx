@@ -46,6 +46,7 @@ import { CalculatorDisclaimer } from './CalculatorDisclaimer';
 import { VpfVsPpfComparison } from './VpfVsPpfComparison';
 import { DownloadResultsSection } from './DownloadResultsSection';
 import { CalculatorExportData } from '@/utils/calculatorExportGenerator';
+import { SliderTickMarks } from './SliderTickMarks';
 import { cn } from '@/lib/utils';
 
 export default function StepUpSIPCalculator() {
@@ -380,11 +381,21 @@ export default function StepUpSIPCalculator() {
                   className="py-1 cursor-pointer"
                   aria-label="Starting Monthly SIP Slider"
                 />
-                <div className="flex justify-between text-[11px] font-mono text-slate-400">
-                  {SIP_MONTHLY_SCALE.labels.map((item, idx) => (
-                    <span key={idx}>{item.label}</span>
-                  ))}
-                </div>
+                <SliderTickMarks
+                  min={0}
+                  max={100}
+                  currentValue={valueToSliderPos(initialMonthly, SIP_MONTHLY_SCALE)}
+                  ticks={SIP_MONTHLY_SCALE.labels.map((item) => ({
+                    percent: item.percent,
+                    label: item.label,
+                    value: sliderPosToValue(item.percent, SIP_MONTHLY_SCALE),
+                  }))}
+                  onSelect={(val) => {
+                    setInitialMonthly(val);
+                    setMonthlyInputStr(val.toLocaleString('en-IN'));
+                    setErrors((prev) => ({ ...prev, monthly: undefined }));
+                  }}
+                />
 
                 {/* Quick preset buttons */}
                 <div className="flex flex-wrap gap-1.5 pt-1">
@@ -450,11 +461,21 @@ export default function StepUpSIPCalculator() {
                   }}
                   className="py-1"
                 />
-                <div className="flex justify-between text-[11px] font-mono text-slate-400">
-                  <span>1%</span>
-                  <span>25%</span>
-                  <span>50%</span>
-                </div>
+                <SliderTickMarks
+                  min={1}
+                  max={50}
+                  currentValue={stepUpPercentage}
+                  ticks={[
+                    { value: 1, label: '1%' },
+                    { value: 25, label: '25%' },
+                    { value: 50, label: '50%' },
+                  ]}
+                  onSelect={(val) => {
+                    setStepUpPercentage(val);
+                    setStepUpInputStr(val.toString());
+                    setErrors((prev) => ({ ...prev, stepUp: undefined }));
+                  }}
+                />
                 {errors.stepUp && <p className="text-xs text-rose-500">{errors.stepUp}</p>}
               </div>
 
@@ -496,11 +517,21 @@ export default function StepUpSIPCalculator() {
                   }}
                   className="py-1"
                 />
-                <div className="flex justify-between text-[11px] font-mono text-slate-400">
-                  <span>1%</span>
-                  <span>15%</span>
-                  <span>35%</span>
-                </div>
+                <SliderTickMarks
+                  min={1}
+                  max={35}
+                  currentValue={expectedReturn}
+                  ticks={[
+                    { value: 1, label: '1%' },
+                    { value: 15, label: '15%' },
+                    { value: 35, label: '35%' },
+                  ]}
+                  onSelect={(val) => {
+                    setExpectedReturn(val);
+                    setReturnInputStr(val.toString());
+                    setErrors((prev) => ({ ...prev, returnRate: undefined }));
+                  }}
+                />
                 {errors.returnRate && <p className="text-xs text-rose-500">{errors.returnRate}</p>}
               </div>
 
@@ -542,11 +573,21 @@ export default function StepUpSIPCalculator() {
                   }}
                   className="py-1"
                 />
-                <div className="flex justify-between text-[11px] font-mono text-slate-400">
-                  <span>1 Year</span>
-                  <span>25 Years</span>
-                  <span>55 Years</span>
-                </div>
+                <SliderTickMarks
+                  min={1}
+                  max={55}
+                  currentValue={investmentDuration}
+                  ticks={[
+                    { value: 1, label: '1 Year' },
+                    { value: 25, label: '25 Years' },
+                    { value: 55, label: '55 Years' },
+                  ]}
+                  onSelect={(val) => {
+                    setInvestmentDuration(val);
+                    setDurationInputStr(val.toString());
+                    setErrors((prev) => ({ ...prev, duration: undefined }));
+                  }}
+                />
                 {errors.duration && <p className="text-xs text-rose-500">{errors.duration}</p>}
               </div>
             </CardContent>

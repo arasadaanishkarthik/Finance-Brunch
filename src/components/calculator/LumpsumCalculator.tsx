@@ -44,6 +44,7 @@ import { CalculatorDisclaimer } from './CalculatorDisclaimer';
 import { VpfVsPpfComparison } from './VpfVsPpfComparison';
 import { DownloadResultsSection } from './DownloadResultsSection';
 import { CalculatorExportData } from '@/utils/calculatorExportGenerator';
+import { SliderTickMarks } from './SliderTickMarks';
 import { cn } from '@/lib/utils';
 
 export default function LumpsumCalculator() {
@@ -325,11 +326,21 @@ export default function LumpsumCalculator() {
                   className="py-1 cursor-pointer"
                   aria-label="Total Investment Slider"
                 />
-                <div className="flex justify-between text-[11px] font-mono text-slate-400">
-                  {LUMPSUM_INVESTMENT_SCALE.labels.map((item, idx) => (
-                    <span key={idx}>{item.label}</span>
-                  ))}
-                </div>
+                <SliderTickMarks
+                  min={0}
+                  max={100}
+                  currentValue={valueToSliderPos(initialInvestment, LUMPSUM_INVESTMENT_SCALE)}
+                  ticks={LUMPSUM_INVESTMENT_SCALE.labels.map((item) => ({
+                    percent: item.percent,
+                    label: item.label,
+                    value: sliderPosToValue(item.percent, LUMPSUM_INVESTMENT_SCALE),
+                  }))}
+                  onSelect={(val) => {
+                    setInitialInvestment(val);
+                    setInvestmentInputStr(val.toLocaleString('en-IN'));
+                    setErrors((prev) => ({ ...prev, investment: undefined }));
+                  }}
+                />
 
                 {/* Quick preset buttons */}
                 <div className="flex flex-wrap gap-1.5 pt-1">
@@ -395,11 +406,22 @@ export default function LumpsumCalculator() {
                   }}
                   className="py-1"
                 />
-                <div className="flex justify-between text-[11px] font-mono text-slate-400">
-                  <span>1%</span>
-                  <span>30%</span>
-                  <span>60%</span>
-                </div>
+                <SliderTickMarks
+                  min={1}
+                  max={60}
+                  currentValue={expectedReturn}
+                  ticks={[
+                    { value: 1, label: '1%' },
+                    { value: 15, label: '15%' },
+                    { value: 30, label: '30%' },
+                    { value: 60, label: '60%' },
+                  ]}
+                  onSelect={(val) => {
+                    setExpectedReturn(val);
+                    setReturnInputStr(val.toString());
+                    setErrors((prev) => ({ ...prev, returnRate: undefined }));
+                  }}
+                />
                 {errors.returnRate && <p className="text-xs text-rose-500">{errors.returnRate}</p>}
               </div>
 
@@ -441,11 +463,21 @@ export default function LumpsumCalculator() {
                   }}
                   className="py-1"
                 />
-                <div className="flex justify-between text-[11px] font-mono text-slate-400">
-                  <span>1 Year</span>
-                  <span>50 Years</span>
-                  <span>100 Years</span>
-                </div>
+                <SliderTickMarks
+                  min={1}
+                  max={100}
+                  currentValue={investmentDuration}
+                  ticks={[
+                    { value: 1, label: '1 Year' },
+                    { value: 50, label: '50 Years' },
+                    { value: 100, label: '100 Years' },
+                  ]}
+                  onSelect={(val) => {
+                    setInvestmentDuration(val);
+                    setDurationInputStr(val.toString());
+                    setErrors((prev) => ({ ...prev, duration: undefined }));
+                  }}
+                />
                 {errors.duration && <p className="text-xs text-rose-500">{errors.duration}</p>}
               </div>
             </CardContent>

@@ -47,6 +47,7 @@ import { CalculatorDisclaimer } from './CalculatorDisclaimer';
 import { VpfVsPpfComparison } from './VpfVsPpfComparison';
 import { DownloadResultsSection } from './DownloadResultsSection';
 import { CalculatorExportData } from '@/utils/calculatorExportGenerator';
+import { SliderTickMarks } from './SliderTickMarks';
 import { cn } from '@/lib/utils';
 
 export default function SWPCalculator() {
@@ -557,11 +558,32 @@ export default function SWPCalculator() {
                   aria-label="Total Investment Corpus Slider"
                 />
 
-                <div className="flex justify-between text-[11px] font-mono text-slate-400">
-                  {SWP_CORPUS_SCALE.labels.map((item, idx) => (
-                    <span key={idx}>{item.label}</span>
-                  ))}
-                </div>
+                <SliderTickMarks
+                  min={0}
+                  max={100}
+                  currentValue={valueToSliderPos(initialCorpus, SWP_CORPUS_SCALE)}
+                  ticks={SWP_CORPUS_SCALE.labels.map((item) => ({
+                    percent: item.percent,
+                    label: item.label,
+                    value: sliderPosToValue(item.percent, SWP_CORPUS_SCALE),
+                  }))}
+                  onSelect={(val) => {
+                    setInitialCorpus(val);
+                    setCorpusInputStr(val.toLocaleString('en-IN'));
+                    setErrors((prev) => ({ ...prev, corpus: undefined }));
+
+                    if (withdrawalMode === 'percent') {
+                      const newRupee = Math.round((val * withdrawalPercentage) / 100);
+                      const clampedRupee = Math.min(MAX_SWP_WITHDRAWAL, Math.max(0, newRupee));
+                      setWithdrawalAmount(clampedRupee);
+                      setWithdrawalInputStr(clampedRupee > 0 ? clampedRupee.toLocaleString('en-IN') : '0');
+                    } else {
+                      const newPct = val > 0 ? (withdrawalAmount / val) * 100 : 0;
+                      setWithdrawalPercentage(newPct);
+                      setPercentInputStr(newPct > 0 ? (newPct < 0.1 ? newPct.toFixed(3) : newPct.toFixed(2)) : '0');
+                    }
+                  }}
+                />
 
                 {/* Quick preset buttons for Corpus */}
                 <div className="flex flex-wrap gap-1.5 pt-1">
@@ -783,12 +805,23 @@ export default function SWPCalculator() {
                   }}
                   className="py-1 cursor-pointer"
                 />
-                <div className="flex justify-between text-[11px] font-mono text-slate-400">
-                  <span>0%</span>
-                  <span>8% (Conservative)</span>
-                  <span>12% (Balanced)</span>
-                  <span>30%</span>
-                </div>
+                <SliderTickMarks
+                  min={0}
+                  max={30}
+                  currentValue={expectedReturn}
+                  ticks={[
+                    { value: 0, label: '0%' },
+                    { value: 8, label: '8% (Cons)' },
+                    { value: 12, label: '12% (Bal)' },
+                    { value: 15, label: '15%' },
+                    { value: 30, label: '30%' },
+                  ]}
+                  onSelect={(val) => {
+                    setExpectedReturn(val);
+                    setReturnInputStr(val.toString());
+                    setErrors((prev) => ({ ...prev, returnRate: undefined }));
+                  }}
+                />
                 {errors.returnRate && <p className="text-xs text-rose-500">{errors.returnRate}</p>}
               </div>
 
@@ -830,11 +863,21 @@ export default function SWPCalculator() {
                   }}
                   className="py-1 cursor-pointer"
                 />
-                <div className="flex justify-between text-[11px] font-mono text-slate-400">
-                  <span>1 Year</span>
-                  <span>30 Years</span>
-                  <span>60 Years</span>
-                </div>
+                <SliderTickMarks
+                  min={1}
+                  max={60}
+                  currentValue={withdrawalDuration}
+                  ticks={[
+                    { value: 1, label: '1 Year' },
+                    { value: 30, label: '30 Years' },
+                    { value: 60, label: '60 Years' },
+                  ]}
+                  onSelect={(val) => {
+                    setWithdrawalDuration(val);
+                    setDurationInputStr(val.toString());
+                    setErrors((prev) => ({ ...prev, duration: undefined }));
+                  }}
+                />
                 {errors.duration && <p className="text-xs text-rose-500">{errors.duration}</p>}
               </div>
             </CardContent>
